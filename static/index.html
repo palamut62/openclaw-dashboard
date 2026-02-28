@@ -12,9 +12,12 @@
   --sidebar-bg: #0f0f1a;
   --main-bg: #1a1a2e;
   --card-bg: #16162a;
+  --surface: #16162a;
+  --surface2: #1e1e35;
   --border: #2a2a45;
   --text: #e2e2f0;
   --text-dim: #7a7a95;
+  --text-secondary: #7a7a95;
   --accent: #7c5cfc;
   --accent-bg: #7c5cfc22;
   --green: #22c55e;
@@ -461,9 +464,279 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .hi-actions{display:flex;gap:5px;margin-top:7px;}
 .empty-hint{text-align:center;padding:30px;color:var(--text-secondary);font-size:13px;}
 
+.detail-btn.danger{background:#e55;color:#fff;}
+.detail-btn.danger:hover{background:#c33;}
+
+/* ══ X NEWS ══ */
+.x-wrap{padding:20px;max-width:900px;margin:0 auto;}
+.x-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.x-title{font-size:18px;font-weight:700;color:var(--text);}
+.x-actions{display:flex;gap:8px;}
+.x-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.x-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.x-settings{grid-column:1/-1;}
+.x-sec-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.x-count{background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;}
+.x-sec-hint{font-size:11px;color:var(--text-secondary);margin-bottom:10px;}
+.x-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;margin-bottom:10px;}
+.x-chip{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px 8px 3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:var(--text);}
+.x-chip .tag-x{cursor:pointer;opacity:.6;font-size:14px;line-height:1;}
+.x-chip .tag-x:hover{opacity:1;}
+.x-add-row{display:flex;gap:8px;}
+.x-setting-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.detail-btn.danger{background:#e55;color:#fff;}
+.detail-btn.danger:hover{background:#c33;}
+
+/* ── HEALTH ── */
+.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px;}
+.health-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.health-card h3{font-size:13px;font-weight:700;margin:0 0 10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;}
+.health-status{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;}
+.h-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.h-green{background:#22c55e;box-shadow:0 0 6px #22c55e88;}
+.h-red{background:#ef4444;box-shadow:0 0 6px #ef444488;}
+.h-yellow{background:#f59e0b;box-shadow:0 0 6px #f59e0b88;}
+.h-gray{background:#6b7280;}
+.agent-health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px;}
+.agent-hcard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
+.agent-hcard .ah-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.agent-hcard .ah-meta{font-size:11px;opacity:.6;}
+.health-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.health-version{font-size:22px;font-weight:700;}
+.health-sub{font-size:13px;opacity:.6;margin-top:2px;}
+.security-findings{margin-top:10px;}
+.sfinding{background:var(--bg);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px;border-left:3px solid var(--border);}
+.sfinding.crit{border-color:#ef4444;}
+.sfinding.warn{border-color:#f59e0b;}
+.sfinding.info{border-color:#3b82f6;}
+.sfinding-title{font-weight:600;margin-bottom:2px;}
+.sfinding-detail{opacity:.7;line-height:1.5;}
+.update-badge{background:#22c55e22;border:1px solid #22c55e55;color:#22c55e;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.health-refresh-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.h-refresh-label{font-size:12px;opacity:.5;}
+
+
+/* ══ APPS ══ */
+.apps-wrap{padding:20px;max-width:1100px;margin:0 auto;}
+.apps-topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.apps-topbar h2{font-size:18px;font-weight:700;}
+.app-type-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.app-type-tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);}
+.app-type-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px;}
+.app-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s;}
+.app-card:hover{border-color:var(--accent);}
+.app-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.app-card-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.app-type-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;}
+.badge-web{background:#3b82f622;color:#3b82f6;}
+.badge-bot{background:#8b5cf622;color:#8b5cf6;}
+.badge-api{background:#f59e0b22;color:#f59e0b;}
+.badge-python{background:#22c55e22;color:#22c55e;}
+.badge-fullstack{background:#ec489922;color:#ec4899;}
+.badge-desktop{background:#06b6d422;color:#06b6d4;}
+.badge-extension{background:#f9731622;color:#f97316;}
+.badge-other{background:#6b728022;color:#6b7280;}
+.badge-pending{background:#f59e0b22;color:#f59e0b;}
+.app-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.app-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;min-height:18px;}
+.app-meta{font-size:11px;color:var(--text-secondary);display:flex;gap:12px;flex-wrap:wrap;}
+.app-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.app-new-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.app-new-section h3{font-size:14px;font-weight:700;margin-bottom:14px;}
+.app-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.app-form-grid.full{grid-template-columns:1fr;}
+.app-form-label{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-secondary);}
+.app-type-picker{display:flex;gap:8px;flex-wrap:wrap;}
+.app-type-opt{padding:6px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:13px;background:transparent;color:var(--text);}
+.app-type-opt.sel{background:var(--accent);color:#fff;border-color:var(--accent);}
+.app-target-pick{display:flex;gap:8px;}
+.app-target-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:12px;background:transparent;color:var(--text);}
+.app-target-btn.sel{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+.app-logs-box{background:#0a0a14;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:1.6;max-height:400px;overflow-y:auto;color:#a0e0b0;white-space:pre-wrap;word-break:break-all;}
+.app-files-tree{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;max-height:350px;overflow-y:auto;}
+.app-file-item{font-size:11px;font-family:monospace;padding:2px 6px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;}
+.app-file-item:hover{background:var(--surface2);}
+.app-file-size{color:var(--text-secondary);font-size:10px;}
+.apps-empty{text-align:center;padding:60px 20px;color:var(--text-secondary);}
+.apps-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:12px;}
+
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE / MOBILE
+═══════════════════════════════════════════════ */
+
+/* Hamburger button — sadece mobilde görünür */
+.mob-menu-btn {
+  display: none;
+  position: fixed; top: 12px; right: 14px; z-index: 1100;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; width: 38px; height: 38px;
+  font-size: 18px; cursor: pointer; line-height: 1;
+  box-shadow: 0 2px 8px #0006;
+}
+
+/* Overlay — sidebar açıkken arka planı karartır */
+.mob-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 900;
+  background: #00000060; backdrop-filter: blur(2px);
+}
+.mob-overlay.open { display: block; }
+
+@media (max-width: 768px) {
+
+  /* Hamburger göster */
+  .mob-menu-btn { display: flex; align-items: center; justify-content: center; }
+
+  /* Sidebar: sol taraftan slide-in drawer */
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 1000;
+    width: 220px; transform: translateX(-100%);
+    transition: transform .25s ease; box-shadow: 4px 0 20px #0008;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* .app layout — sidebar çekilince full width */
+  .app { flex-direction: column; }
+  .app > div[style] { flex: 1 !important; }
+
+  /* Main header */
+  .main-header { padding: 14px 16px 0; }
+  .main-title { font-size: 18px; }
+  .main-header-top { margin-bottom: 12px; }
+
+  /* Search box daralt */
+  .search-box { width: 140px; font-size: 12px; }
+
+  /* Page content padding */
+  .page-wrap { padding: 16px !important; }
+
+  /* Cards tam genişlik */
+  .agent-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .health-grid { grid-template-columns: 1fr !important; }
+  .agent-health-grid { grid-template-columns: 1fr 1fr !important; }
+  .studio-grid { grid-template-columns: 1fr !important; }
+  .x-grid { grid-template-columns: 1fr !important; }
+
+  /* Apps grid */
+  .apps-grid { grid-template-columns: 1fr !important; }
+
+  /* Idea cards tek kolon */
+  .ideas-grid { columns: 1 !important; }
+
+  /* Stat bar scroll */
+  .stat-bar { overflow-x: auto; }
+
+  /* Log box */
+  .log-box { font-size: 11px; }
+
+  /* Modal tam ekran */
+  .modal-box { width: 95vw !important; max-width: none !important; max-height: 85vh; overflow-y: auto; }
+
+  /* Header butonlar */
+  .btn-p, .btn-s { padding: 7px 12px; font-size: 12px; }
+
+  /* Nav item font */
+  .nav-item { font-size: 13px; padding: 10px 12px; }
+
+  /* Office canvas küçük */
+  #office-canvas { width: 100% !important; height: auto !important; max-height: 60vw; }
+
+  /* System metrics tek kolon */
+  .sys-grid, .metrics-grid { grid-template-columns: 1fr !important; }
+
+  /* Agent team */
+  .agent-team-grid { grid-template-columns: 1fr !important; }
+
+  /* Cron table scroll */
+  .cron-table-wrap { overflow-x: auto; }
+  .cron-table { min-width: 500px; }
+
+  /* Health top */
+  .health-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Tools header */
+  .tools-header { flex-wrap: wrap; gap: 8px; }
+
+  /* Apps header */
+  .apps-header, .x-header { flex-wrap: wrap; gap: 8px; }
+
+  /* App card butonlar */
+  .app-card-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .agent-grid { grid-template-columns: 1fr !important; }
+  .agent-health-grid { grid-template-columns: 1fr !important; }
+  .search-box { width: 110px; }
+  .main-title { font-size: 16px; }
+  .main-header { padding: 10px 12px 0; }
+}
+
+
+/* ── X NEWS SUGGEST PANEL ── */
+.x-suggest-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+.x-suggest-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.x-suggest-loading{font-size:12px;color:var(--text-secondary);padding:20px;text-align:center;}
+.x-suggest-cats{}
+.x-cat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-secondary);margin:10px 0 6px;}
+.x-cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;}
+.x-sug-chip{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:4px 10px;font-size:12px;
+  color:var(--text);cursor:pointer;transition:all .15s;user-select:none;}
+.x-sug-chip:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+.x-sug-chip.added{background:#22c55e22;border-color:#22c55e55;color:#22c55e;cursor:default;}
+.x-suggest-footer{font-size:11px;color:var(--text-secondary);margin-top:10px;}
+
+
+/* ══ APIS TAB ══ */
+.apis-wrap{padding:20px;max-width:1100px;margin:0 auto;}
+.apis-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.apis-title{font-size:18px;font-weight:700;color:var(--text);}
+.apis-actions{display:flex;gap:8px;}
+.apis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.api-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;}
+.api-card:hover{border-color:var(--accent);}
+.api-card-head{display:flex;align-items:center;gap:12px;}
+.api-icon{font-size:28px;width:42px;text-align:center;}
+.api-info{flex:1;min-width:0;}
+.api-name{font-size:15px;font-weight:700;color:var(--text);}
+.api-base{font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.api-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.api-status-dot.online{background:#22c55e;box-shadow:0 0 6px #22c55e88;}
+.api-status-dot.offline{background:#ef4444;box-shadow:0 0 6px #ef444488;}
+.api-status-dot.auth_error{background:#f59e0b;box-shadow:0 0 6px #f59e0b88;}
+.api-status-dot.rate_limited{background:#a855f7;box-shadow:0 0 6px #a855f788;}
+.api-status-dot.error{background:#ef4444;}
+.api-status-dot.unknown{background:#6b7280;}
+.api-status-dot.pinging{background:#3b82f6;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.api-plan-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.api-plan-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.api-plan-free{background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;}
+.api-plan-paid{background:#3b82f622;color:#60a5fa;border:1px solid #3b82f644;}
+.api-cost{font-size:12px;color:var(--text-secondary);}
+.api-limits{display:flex;flex-wrap:wrap;gap:6px;}
+.api-limit-pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 8px;font-size:11px;color:var(--text-secondary);}
+.api-limit-pill strong{color:var(--text);}
+.api-remaining{background:var(--bg);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text-secondary);}
+.api-remaining-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+.api-rem-bar{height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+.api-rem-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .5s;}
+.api-rem-fill.ok{background:#22c55e;}
+.api-rem-fill.warn{background:#f59e0b;}
+.api-rem-fill.crit{background:#ef4444;}
+.api-models{display:flex;flex-wrap:wrap;gap:4px;}
+.api-model-tag{background:var(--surface2);border-radius:6px;padding:2px 7px;font-size:11px;color:var(--text-secondary);}
+.api-notes{font-size:11px;color:var(--text-secondary);font-style:italic;}
+.api-card-footer{display:flex;gap:6px;justify-content:flex-end;padding-top:4px;border-top:1px solid var(--border);margin-top:4px;}
+.api-checked{font-size:10px;color:var(--text-secondary);}
+.api-key-display{font-family:monospace;font-size:10px;color:var(--text-secondary);background:var(--bg);padding:2px 6px;border-radius:4px;}
+
 </style>
 </head>
 <body>
+<div class="mob-overlay" id="mob-overlay" onclick="closeSidebar()"></div>
 <div class="app">
   <!-- SIDEBAR -->
   <aside class="sidebar">
@@ -471,7 +744,8 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <div class="sidebar-brand-icon"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/openclaw.png" alt="OpenClaw"></div>
       <span>OpenClaw</span>
     </div>
-    <nav class="sidebar-nav">
+    <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+    <nav class="sidebar-nav" id="sidebar-nav">
       <div class="nav-item active" data-page="agents"><span class="nav-icon">🤖</span> Agents</div>
       <div class="nav-item" data-page="office"><span class="nav-icon">🏢</span> Office</div>
       <div class="nav-item" data-page="ideas"><span class="nav-icon">💡</span> Ideas</div>
@@ -482,8 +756,11 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> Tools</div>
       <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> Studio</div>
       <div class="nav-item" data-page="x-news"><span class="nav-icon">𝕏</span> X News</div>
+      <div class="nav-item" data-page="health"><span class="nav-icon">💊</span> Health</div>
+      <div class="nav-item" data-page="apps"><span class="nav-icon">🚀</span> Apps</div>
+      <div class="nav-item" data-page="apikeys"><span class="nav-icon">🔑</span> APIs</div>
     </nav>
-    <div class="sidebar-footer">OpenClaw v2</div>
+    <div class="sidebar-footer" id="sidebar-ver">OpenClaw</div>
   </aside>
 
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
@@ -509,6 +786,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
         <div class="page" id="page-tools"><div class="loading">Yükleniyor...</div></div>
         <div class="page" id="page-studio"><div class="loading">Yükleniyor...</div></div>
         <div class="page" id="page-x-news"><div class="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-health"><div class="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-apps"><div class="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-apikeys"><div class="loading">Yükleniyor...</div></div>
       </div>
     </div>
 
@@ -538,7 +818,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 
 <script>
 const KEY='nootle-dashboard-2024-secret', headers={'X-API-Key':KEY};
-const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio','x-news':'X News'};
+const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio','x-news':'X News','apps':'🚀 Apps','health':'💊 Health',apikeys:'🔑 APIs'};
 const TAG_COLORS=['green','orange','blue','purple','pink','red','cyan'];
 let tagColorIdx=0;
 const tagColorMap={};
@@ -558,9 +838,11 @@ function showAlert(msg,title){
   title=title||'Bilgi';
   openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">Tamam</button></div>`);
 }
+let _confirmCb=null;
 function showConfirm(msg,onYes,title){
   title=title||'Onay';
-  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" onclick="closeModal();(${onYes.toString()})()">Evet</button></div>`);
+  _confirmCb=onYes;
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" onclick="closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}">Evet</button></div>`);
 }
 function showPrompt(msg,defaultVal,onSubmit,title){
   title=title||'Giriş';
@@ -583,7 +865,7 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 // Nav
 const loaded={};
-document.querySelectorAll('.nav-item').forEach(n=>{n.onclick=()=>{
+document.querySelectorAll('.nav-item').forEach(n=>{n.onclick=()=>{closeSidebar();
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   n.classList.add('active');const pg=n.dataset.page;
@@ -599,6 +881,9 @@ document.querySelectorAll('.nav-item').forEach(n=>{n.onclick=()=>{
   if(pg==='tools')loadTools();
   if(pg==='studio')loadStudio();
   if(pg==='x-news')loadXNews();
+  if(pg==='health')loadHealth();
+  if(pg==='apps')loadApps();
+      if(pg==='apikeys')loadApiKeys();
 };});
 
 async function api(p){const r=await fetch(p,{headers});if(!r.ok)throw new Error();return r.json();}
@@ -3922,26 +4207,6 @@ async function initThreeJSOffice(){
       .cam-btn {background:rgba(15,15,26,.8);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:9px;color:var(--text-dim);cursor:pointer;}
       .cam-btn:hover {color:var(--text);border-color:var(--accent);}
     
-/* ══ X NEWS ══ */
-.x-wrap{padding:20px;max-width:900px;margin:0 auto;}
-.x-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.x-title{font-size:18px;font-weight:700;color:var(--text);}
-.x-actions{display:flex;gap:8px;}
-.x-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.x-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
-.x-settings{grid-column:1/-1;}
-.x-sec-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
-.x-count{background:var(--primary);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;}
-.x-sec-hint{font-size:11px;color:var(--text-secondary);margin-bottom:10px;}
-.x-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;margin-bottom:10px;}
-.x-chip{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px 8px 3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:var(--text);}
-.x-chip .tag-x{cursor:pointer;opacity:.6;font-size:14px;line-height:1;}&.x-chip .tag-x:hover{opacity:1;}
-.x-add-row{display:flex;gap:8px;}
-.x-setting-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.t-input.small{width:70px;text-align:center;}
-
-.detail-btn.danger{background:var(--danger,#e55);color:#fff;}
-.detail-btn.danger:hover{background:#c33;}
 </style>
   `;
 
@@ -4883,8 +5148,35 @@ async function evalTool(name){
 async function showRep(name){
   const r=await fetch('/api/tools/'+encodeURIComponent(name),{headers});
   const t=await r.json();
-  if(!t.report){openModal(name,'<p>Rapor yok.</p>');return;}
-  openModal(name+' — Rapor',`<div style="font-size:13px;line-height:1.7;max-height:70vh;overflow-y:auto;">${t.report}</div>`);
+  // History section
+  let histHtml='';
+  const hist=t.history||[];
+  if(hist.length>0){
+    histHtml=`<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:12px;">
+      <div style="font-weight:600;margin-bottom:8px;font-size:13px;">📋 Geçmiş Değerlendirmeler (${hist.length})</div>`;
+    const dec2e={ADOPT:'✅',WAIT:'⏳',IGNORE:'❌',UNKNOWN:'❓','':`🆕`};
+    hist.forEach((h,i)=>{
+      const d=h.date?h.date.slice(0,16).replace('T',' '):'?';
+      const em=dec2e[h.decision||'']||'❓';
+      histHtml+=`<div style="border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px;">
+        <div style="font-weight:600;">${em} ${h.decision||'?'} — <span style="opacity:.7">${d}</span></div>
+        ${h.report_preview?`<div style="margin-top:4px;opacity:.8;line-height:1.5;">${h.report_preview.slice(0,150)}…</div>`:''}
+      </div>`;
+    });
+    histHtml+=`<button class="btn-s btn-del" style="margin-top:6px" onclick="clearToolHistory(${JSON.stringify(name)})">🗑 Geçmişi Sil</button>
+    </div>`;
+  }
+  if(!t.report && hist.length===0){openModal(name,'<p>Rapor yok.</p>');return;}
+  const reportHtml=t.report?`<div style="font-size:13px;line-height:1.7;">${t.report}</div>`:'<p style="opacity:.6">Henüz değerlendirilmedi.</p>';
+  openModal(name+' — Rapor',`<div style="max-height:72vh;overflow-y:auto;">${reportHtml}${histHtml}</div>`);
+}
+
+async function clearToolHistory(name){
+  showConfirm(name+' — tüm değerlendirme geçmişi silinsin mi?',async()=>{
+    await fetch('/api/tools/'+encodeURIComponent(name)+'/history',{method:'DELETE',headers});
+    closeModal();
+    await loadTools();
+  },'Geçmişi Sil');
 }
 
 async function rmTag(name,tag){
@@ -4916,6 +5208,367 @@ function addTagUI(name,btn){
   };
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')commit();if(e.key==='Escape')inp.remove();});
   inp.addEventListener('blur',()=>setTimeout(commit,150));
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// APPS
+// ══════════════════════════════════════════════════════
+const APP_TYPES=[
+  {id:'web',label:'🌐 Web App'},
+  {id:'bot',label:'🤖 Telegram Bot'},
+  {id:'api',label:'⚡ API/Backend'},
+  {id:'python',label:'🐍 Python Tool'},
+  {id:'fullstack',label:'🔥 Full-Stack'},
+  {id:'desktop',label:'🖥️ Desktop App'},
+  {id:'extension',label:'🧩 Extension'},
+];
+const TYPE_BADGE={
+  web:'badge-web',bot:'badge-bot',api:'badge-api',python:'badge-python',
+  fullstack:'badge-fullstack',desktop:'badge-desktop',extension:'badge-extension',other:'badge-other',pending:'badge-pending'
+};
+const TYPE_ICON={
+  web:'🌐',bot:'🤖',api:'⚡',python:'🐍',fullstack:'🔥',desktop:'🖥️',extension:'🧩',other:'📦',pending:'⏳'
+};
+let _appsFilter='all';
+let _selAppType='web';
+let _selDeployTarget='vps';
+let _appsData=[];
+
+async function loadApps(){
+  const pg=document.getElementById('page-apps');if(!pg)return;
+  try{_appsData=await api('/api/apps');}
+  catch(e){pg.innerHTML='<div class="loading" style="color:red">Apps yüklenemedi: '+e+'</div>';return;}
+  renderApps(pg);
+}
+
+function renderApps(pg){
+  const apps=_appsData||[];
+  let h='<div class="apps-wrap">';
+
+  // ── Yeni Uygulama Formu ──
+  h+=`<div class="app-new-section">
+    <h3>✨ Yeni Uygulama İste</h3>
+    <div class="app-form-grid" style="margin-bottom:12px">
+      <div>
+        <div class="app-form-label">Proje Adı</div>
+        <input id="app-name-inp" class="t-input" placeholder="my-todo-app" style="width:100%">
+      </div>
+      <div>
+        <div class="app-form-label">Deploy Hedefi</div>
+        <div class="app-target-pick">
+          <button class="app-target-btn sel" onclick="selTarget(this,'vps')">🖥️ VPS</button>
+          <button class="app-target-btn" onclick="selTarget(this,'pc')">💻 PC</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="app-form-label">Tip</div>
+      <div class="app-type-picker" id="app-type-picker">
+        ${APP_TYPES.map(t=>`<button class="app-type-opt${t.id==='web'?' sel':''}" onclick="selType(this,'${t.id}')">${t.label}</button>`).join('')}
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="app-form-label">Açıklama — ne yapması gerekiyor? (ne kadar detaylı, o kadar iyi)</div>
+      <textarea id="app-desc-inp" class="t-input" rows="4" placeholder="Örn: Kullanıcıların todo ekleyip silebildiği, localStorage ile saklayan basit bir web uygulaması. Mobil uyumlu olsun, dark theme..." style="width:100%;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <button class="btn-p" onclick="submitAppRequest()">📨 İsteği Gönder</button>
+    <span style="font-size:12px;opacity:.6;margin-left:10px">→ Telegram botuna iletilir, bot oluşturup bildirir</span>
+  </div>`;
+
+  // ── Filtre tabları ──
+  const types=['all',...new Set(apps.map(a=>a.type||'other'))];
+  h+=`<div class="app-type-tabs">`;
+  types.forEach(t=>{
+    const lbl=t==='all'?'Tümü ('+(apps.length)+')':((TYPE_ICON[t]||'📦')+' '+t+' ('+apps.filter(a=>(a.type||'other')===t).length+')');
+    h+=`<button class="app-type-tab${_appsFilter===t?' active':''}" onclick="setAppsFilter('${t}')">${lbl}</button>`;
+  });
+  h+=`</div>`;
+
+  // ── Uygulama kartları ──
+  const filtered=_appsFilter==='all'?apps:apps.filter(a=>(a.type||'other')===_appsFilter);
+  if(filtered.length===0){
+    h+=`<div class="apps-empty">
+      <div style="font-size:40px;margin-bottom:12px">🚀</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Henüz proje yok</div>
+      <div style="font-size:13px">Yukarıdan yeni bir uygulama isteği oluştur</div>
+    </div>`;
+  } else {
+    h+=`<div class="apps-section-title">PROJELER (${filtered.length})</div>`;
+    h+=`<div class="apps-grid">`;
+    filtered.forEach(app=>{
+      const icon=TYPE_ICON[app.type||'other']||'📦';
+      const badge=TYPE_BADGE[app.type||'other']||'badge-other';
+      const st=app.status||'unknown';
+      const dotColor=st==='running'?'#22c55e':st==='pending'?'#f59e0b':st==='ready'?'#3b82f6':'#6b7280';
+      const hasPath=!!(app.path);
+      const addedStr=app.added?app.added.slice(0,10):'';
+      const builtStr=app.built_at?app.built_at.slice(0,10):'';
+      const nameEnc=encodeURIComponent(app.name);
+      h+=`<div class="app-card">
+        <div class="app-card-top">
+          <div class="app-card-name">
+            <div class="app-status-dot" style="background:${dotColor}"></div>
+            ${icon} ${app.name}
+          </div>
+          <span class="app-type-badge ${badge}">${app.type||'other'}</span>
+        </div>
+        <div class="app-desc">${app.description||'<span style="opacity:.4">Açıklama yok</span>'}</div>
+        <div class="app-meta">
+          ${addedStr?`<span>📅 ${addedStr}</span>`:''}
+          ${builtStr?`<span>🔨 ${builtStr}</span>`:''}
+          ${app.deploy_target?`<span>${app.deploy_target==='pc'?'💻 PC':'🖥️ VPS'}</span>`:''}
+          ${app.path?`<span title="${app.path}">📁 ${app.path.split('/').pop()}</span>`:''}
+          ${app.deploy_url?`<a href="${app.deploy_url}" target="_blank" style="color:var(--accent)">🔗 URL</a>`:''}
+        </div>
+        <div class="app-actions">
+          ${hasPath?`<button class="btn-s" onclick="showAppFiles(${esc(JSON.stringify(app.name))})">📁 Dosyalar</button>`:''}
+          <button class="btn-s" onclick="showAppLogs(${esc(JSON.stringify(app.name))})">📋 Log</button>
+          ${st==='running'?`<button class="btn-s" onclick="stopApp(${esc(JSON.stringify(app.name))})">⏹ Durdur</button>`:''}
+          <button class="btn-s btn-del" onclick="deleteApp(${esc(JSON.stringify(app.name))})">🗑</button>
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+='</div>';
+  pg.innerHTML=h;
+}
+
+function setAppsFilter(t){_appsFilter=t;const pg=document.getElementById('page-apps');if(pg)renderApps(pg);}
+
+function selType(btn,type){
+  _selAppType=type;
+  document.querySelectorAll('.app-type-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function selTarget(btn,target){
+  _selDeployTarget=target;
+  document.querySelectorAll('.app-target-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+async function submitAppRequest(){
+  const name=(document.getElementById('app-name-inp')||{}).value?.trim();
+  const desc=(document.getElementById('app-desc-inp')||{}).value?.trim();
+  if(!name){showAlert('Proje adı boş olamaz','Hata');return;}
+  if(!desc||desc.length<20){showAlert('Açıklama çok kısa — ne yapmasını istediğini detaylı yaz','Hata');return;}
+  const r=await fetch('/api/apps',{method:'POST',headers:{...headers,'Content-Type':'application/json'},
+    body:JSON.stringify({name,type:_selAppType,description:desc,deploy_target:_selDeployTarget})});
+  const j=await r.json();
+  if(j.ok){
+    showAlert('✅ İstek gönderildi! Bot kısa süre içinde yapmaya başlayacak.','Tamam');
+    document.getElementById('app-name-inp').value='';
+    document.getElementById('app-desc-inp').value='';
+    await loadApps();
+  } else {
+    showAlert('Hata: '+(j.error||'bilinmeyen'),'Hata');
+  }
+}
+
+async function showAppFiles(name){
+  const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/files',{headers});
+  const j=await r.json();
+  if(j.error){showAlert(j.error,'Hata');return;}
+  const files=j.files||[];
+  let h=`<div class="app-files-tree">`;
+  if(files.length===0){h+='<div style="opacity:.5">Dosya bulunamadı</div>';}
+  files.forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    const indent=depth*12;
+    const isDir=false;
+    const ext=f.path.split('.').pop().toLowerCase();
+    const ficon={'js':'🟨','ts':'🔷','py':'🐍','html':'🌐','css':'🎨','json':'📋','md':'📝','sh':'⚙️','env':'🔑','txt':'📄','sql':'🗄️'}[ext]||'📄';
+    const sizeStr=f.size>1024?Math.round(f.size/1024)+'KB':f.size+'B';
+    h+=`<div class="app-file-item" style="padding-left:${8+indent}px">${ficon} ${f.path}<span class="app-file-size">${sizeStr}</span></div>`;
+  });
+  h+='</div>';
+  h+=`<div style="margin-top:10px;font-size:12px;opacity:.6">${files.length} dosya</div>`;
+  openModal(name+' — Dosyalar', h);
+}
+
+async function showAppLogs(name){
+  openModal(name+' — Loglar','<div class="app-logs-box">Yükleniyor...</div>');
+  const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/logs',{headers});
+  const j=await r.json();
+  const box=document.querySelector('.app-logs-box');
+  if(box)box.textContent=j.logs||'(log yok)';
+}
+
+async function stopApp(name){
+  showConfirm(name+' durdurulsun mu?',async()=>{
+    await fetch('/api/apps/'+encodeURIComponent(name)+'/stop',{method:'POST',headers});
+    await loadApps();
+  },'Uygulamayı Durdur');
+}
+
+async function deleteApp(name){
+  showConfirm(name+' silinsin mi? (proje klasörü de silinir)',async()=>{
+    await fetch('/api/apps/'+encodeURIComponent(name),{method:'DELETE',headers});
+    await loadApps();
+  },'Projeyi Sil');
+}
+
+// ══════════════════════════════════════════════════════
+// HEALTH
+// ══════════════════════════════════════════════════════
+const AGENT_EMOJI={main:'🧠','pc-agent':'🖥️','research-agent':'🔍','security-agent':'🛡️','monitor-agent':'📊','finance-agent':'💰','assistant-agent':'📅','devops-agent':'🗄️','social-agent':'📱','ai-agent':'🤖','comm-agent':'📧','idea-agent':'💡'};
+let healthTimer=null;
+
+async function loadHealth(force){
+  clearTimeout(healthTimer);
+  const pg=document.getElementById('page-health');if(!pg)return;
+  let data;
+  try{
+    const url='/api/health'+(force?'?force=1':'');
+    data=await api(url);
+  }catch(e){
+    pg.innerHTML='<div class="loading" style="color:red">Health verisi alınamadı: '+e+'</div>';
+    return;
+  }
+  renderHealth(pg,data);
+  // 30 saniyede bir otomatik yenile
+  healthTimer=setTimeout(()=>{if(document.getElementById('page-health').style.display!=='none')loadHealth();},30000);
+}
+
+function renderHealth(pg,d){
+  if(d.error){pg.innerHTML='<div class="loading" style="color:red">'+d.error+'</div>';return;}
+
+  const gw=d.gateway||{};
+  const gwSvc=d.gatewayService||{};
+  const upd=d.update||{};
+  const avail=d.availability||{};
+  const installedVer=gw.self?.version||'-';
+  const latestVer=upd.registry?.latestVersion||'-';
+  const updateAvailable=latestVer!=='-'&&installedVer!=='-'&&latestVer!==installedVer;
+  const latencyMs=gw.connectLatencyMs;
+  const gwReachable=gw.reachable;
+  const os=d.os||{};
+  const agents=d.agents?.agents||[];
+  const hbAgents=(d.heartbeat?.agents||[]);
+  const hbMap={};hbAgents.forEach(a=>hbMap[a.agentId]=a);
+  const security=d.securityAudit||{};
+  const sessions=d.sessions||{};
+
+  // Sidebar versiyonu güncelle
+  const sv=document.getElementById('sidebar-ver');
+  if(sv)sv.textContent='OpenClaw '+installedVer;
+
+  let h='';
+
+  // Top bar
+  h+=`<div class="health-top">
+    <div>
+      <div class="health-version">🦞 OpenClaw ${installedVer}</div>
+      <div class="health-sub">
+        ${gwReachable?'<span style="color:#22c55e">● Gateway çalışıyor</span>':'<span style="color:#ef4444">● Gateway kapalı</span>'}
+        ${latencyMs!=null?` &nbsp;·&nbsp; ${latencyMs}ms`:''} &nbsp;·&nbsp; ${os.label||''}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      ${updateAvailable
+        ?`<span class="update-badge">🆕 v${latestVer} mevcut</span>
+          <button class="btn-p" onclick="doUpdate()">⬆️ Güncelle</button>`
+        :`<span style="font-size:12px;opacity:.5">✓ Güncel (${latestVer})</span>`}
+      <button class="btn-s" onclick="loadHealth(true)">↻ Yenile</button>
+    </div>
+  </div>`;
+
+  // Otomatik yenileme çubuğu
+  h+=`<div class="health-refresh-bar">
+    <span class="h-refresh-label">🔄 Otomatik yenileme: 30 saniye</span>
+  </div>`;
+
+  // Sistem kartları
+  h+=`<div class="health-grid">`;
+
+  // Gateway kartı
+  const gwColor=gwReachable?'h-green':'h-red';
+  const gwStatus=gwSvc.runtimeShort||'bilinmiyor';
+  h+=`<div class="health-card">
+    <h3>Gateway Servisi</h3>
+    <div class="health-status"><div class="h-dot ${gwColor}"></div>${gwReachable?'Çalışıyor':'Kapalı'}</div>
+    <div style="font-size:12px;opacity:.6;margin-top:6px;">${gwStatus}</div>
+    <div style="font-size:12px;opacity:.6;">${gwSvc.label||''} · ${gwSvc.loadedText||''}</div>
+  </div>`;
+
+  // Oturum kartı
+  const sessCount=sessions.count||0;
+  h+=`<div class="health-card">
+    <h3>Aktif Oturumlar</h3>
+    <div class="health-status"><div class="h-dot ${sessCount>0?'h-green':'h-gray'}"></div>${sessCount} oturum</div>
+    <div style="font-size:12px;opacity:.6;margin-top:6px;">Model: ${sessions.defaults?.model||'-'}</div>
+    <div style="font-size:12px;opacity:.6;">Context: ${sessions.defaults?.contextTokens?.toLocaleString()||'-'} token</div>
+  </div>`;
+
+  // Güvenlik özeti kartı
+  const secCrit=security.summary?.critical||0;
+  const secWarn=security.summary?.warn||0;
+  const secInfo=security.summary?.info||0;
+  const secColor=secCrit>0?'h-red':secWarn>0?'h-yellow':'h-green';
+  h+=`<div class="health-card">
+    <h3>Güvenlik Durumu</h3>
+    <div class="health-status"><div class="h-dot ${secColor}"></div>${secCrit>0?'Kritik sorun':secWarn>0?'Uyarı var':'Temiz'}</div>
+    <div style="font-size:12px;opacity:.6;margin-top:6px;">Kritik: ${secCrit} · Uyarı: ${secWarn} · Bilgi: ${secInfo}</div>
+  </div>`;
+
+  h+=`</div>`;
+
+  // Agent grid
+  h+=`<div style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.7;">AGENTLAR</div>`;
+  h+=`<div class="agent-health-grid">`;
+  agents.forEach(a=>{
+    const emoji=AGENT_EMOJI[a.id]||'🤖';
+    const hb=hbMap[a.id];
+    const hbEnabled=hb?.enabled||false;
+    const hbEvery=hb?.every||'disabled';
+    const lastActive=a.lastActiveAgeMs!=null?formatAge(a.lastActiveAgeMs):'hiç';
+    const dotColor=a.sessionsCount>0?'h-green':hbEnabled?'h-yellow':'h-gray';
+    h+=`<div class="agent-hcard">
+      <div class="ah-name"><div class="h-dot ${dotColor}"></div>${emoji} ${a.id}</div>
+      <div class="ah-meta">Son: ${lastActive}</div>
+      <div class="ah-meta">Heartbeat: ${hbEnabled?hbEvery:'kapalı'}</div>
+      <div class="ah-meta">${a.sessionsCount} oturum</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Güvenlik detayları
+  const findings=security.findings||[];
+  if(findings.length>0){
+    h+=`<div style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.7;">GÜVENLİK BULGULARI</div>`;
+    h+=`<div class="security-findings">`;
+    findings.forEach(f=>{
+      const cls=f.severity==='critical'?'crit':f.severity==='warn'?'warn':'info';
+      const icon=f.severity==='critical'?'🔴':f.severity==='warn'?'🟡':'🔵';
+      h+=`<div class="sfinding ${cls}">
+        <div class="sfinding-title">${icon} ${f.title||''}</div>
+        <div class="sfinding-detail">${(f.detail||'').slice(0,200)}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  pg.innerHTML=h;
+}
+
+function formatAge(ms){
+  if(ms==null)return'hiç';
+  const s=Math.floor(ms/1000);
+  if(s<60)return s+'s';
+  if(s<3600)return Math.floor(s/60)+'dk';
+  if(s<86400)return Math.floor(s/3600)+'sa';
+  return Math.floor(s/86400)+'g';
+}
+
+async function doUpdate(){
+  showConfirm('OpenClaw güncelleme başlatılsın mı? Gateway ~1-2 dk yeniden başlar.',async()=>{
+    const r=await fetch('/api/health/update',{method:'POST',headers});
+    const j=await r.json();
+    showAlert(j.message||j.error||'İşlem başlatıldı','Güncelleme');
+  },'OpenClaw Güncelle');
 }
 
 // ══════════════════════════════════════════════════════
@@ -5059,10 +5712,12 @@ function renderXNews(){
     <div class="x-header">
       <span class="x-title">𝕏 Twitter Takip Konfigürasyonu</span>
       <div class="x-actions">
+        <button class="btn-s" onclick="xSuggest()">✨ Trend Keşfet</button>
         <button class="btn-p" onclick="xRun()">▶ Şimdi Çalıştır</button>
         <button class="btn-s" onclick="loadXNews()">↻</button>
       </div>
     </div>
+    <div id="x-suggest-container"></div>
     <div class="x-grid">
 
       <div class="x-section">
@@ -5172,6 +5827,256 @@ async function xSaveSettings(){
   );
 }
 
+// ══════════════════════════════════════════════════════
+// APIS TAB
+// ══════════════════════════════════════════════════════
+const STATUS_LABEL={online:'🟢 Online',offline:'🔴 Offline',auth_error:'🟡 Auth Hatası',
+  rate_limited:'🟣 Rate Limit',error:'🔴 Hata',unknown:'⚪ Bilinmiyor',pinging:'🔵 Test...'};
+
+async function loadApiKeys(){
+  const pg=document.getElementById('page-apikeys');if(!pg)return;
+  pg.innerHTML='<div class="loading">Yükleniyor...</div>';
+  try{
+    const apis=await api('/api/apis');
+    renderApiKeys(apis);
+  }catch(e){pg.innerHTML='<div class="empty-hint">API listesi yüklenemedi.</div>';}
+}
+
+function renderApiKeys(apis){
+  const pg=document.getElementById('page-apikeys');if(!pg)return;
+  const totalCost=apis.reduce((s,a)=>s+(a.monthly_cost_usd||0),0);
+  const onlineCount=apis.filter(a=>a.status==='online').length;
+
+  let cards=apis.map(a=>renderApiCard(a)).join('');
+
+  pg.innerHTML=`<div class="apis-wrap">
+    <div class="apis-header">
+      <div>
+        <div class="apis-title">🔑 API Yönetimi</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">
+          ${apis.length} API · ${onlineCount} online · Aylık maliyet: $${totalCost.toFixed(0)}
+        </div>
+      </div>
+      <div class="apis-actions">
+        <button class="btn-s" onclick="pingAllApis()">🔍 Hepsini Test Et</button>
+        <button class="btn-p" onclick="showAddApiModal()">+ API Ekle</button>
+      </div>
+    </div>
+    <div class="apis-grid" id="apis-grid">${cards}</div>
+  </div>`;
+}
+
+function renderApiCard(a){
+  const statusCls=a.status||'unknown';
+  const planCls=a.monthly_cost_usd>0?'api-plan-paid':'api-plan-free';
+  const planText=a.monthly_cost_usd>0?`💰 $${a.monthly_cost_usd}/ay`:'Ücretsiz';
+  const costBadge=a.monthly_cost_usd>0?`<span class="api-cost">$${a.monthly_cost_usd}/ay</span>`:'';
+
+  // Limits pills
+  const limits=a.limits||{};
+  const limitPills=Object.entries(limits).map(([k,v])=>{
+    if(v===null||v===undefined) return '';
+    const label=k.replace(/_/g,' ');
+    const val=typeof v==='number'&&v>=1000?(v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'K'):v;
+    return `<span class="api-limit-pill"><strong>${val}</strong> ${label}</span>`;
+  }).join('');
+
+  // Remaining
+  let remHtml='';
+  const rem=a.remaining||{};
+  if(Object.keys(rem).length>0){
+    remHtml='<div class="api-remaining">';
+    for(const [k,v] of Object.entries(rem)){
+      if(v===null||v===undefined) continue;
+      const label=k.replace(/_/g,' ');
+      // bar için limit bul
+      const limitKey=k.replace('remaining','limit').replace('_remaining','_limit');
+      const limitVal=rem[limitKey]||(limits[k.replace('remaining','').replace('_','')]);
+      let barHtml='';
+      if(limitVal&&typeof v==='number'){
+        const pct=Math.min(100,Math.round((v/limitVal)*100));
+        const fillCls=pct>50?'ok':pct>20?'warn':'crit';
+        barHtml=`<div class="api-rem-bar"><div class="api-rem-fill ${fillCls}" style="width:${pct}%"></div></div>`;
+      }
+      remHtml+=`<div class="api-remaining-row"><span>${label}</span><span>${v}</span></div>${barHtml}`;
+    }
+    remHtml+='</div>';
+  }
+
+  // Models
+  const modelTags=(a.models||[]).map(m=>`<span class="api-model-tag">${esc(m)}</span>`).join('');
+
+  // Checked
+  const checkedStr=a.last_checked?`<span class="api-checked">Son test: ${a.last_checked.slice(11,16)}</span>`:'';
+
+  return `<div class="api-card" id="api-card-${esc(a.id)}">
+    <div class="api-card-head">
+      <div class="api-icon">${a.icon||'🔑'}</div>
+      <div class="api-info">
+        <div class="api-name">${esc(a.name)}</div>
+        <div class="api-base">${esc(a.base_url||'')}</div>
+      </div>
+      <div class="api-status-dot ${statusCls}" title="${STATUS_LABEL[statusCls]||statusCls}" id="api-dot-${esc(a.id)}"></div>
+    </div>
+    <div class="api-plan-row">
+      <span class="api-plan-badge ${planCls}">${a.plan||'Free'}</span>
+      ${costBadge}
+      ${a.tags?(a.tags||[]).map(t=>`<span class="api-limit-pill">${esc(t)}</span>`).join(''):''}
+    </div>
+    ${limitPills?`<div class="api-limits">${limitPills}</div>`:''}
+    ${remHtml}
+    ${modelTags?`<div class="api-models">${modelTags}</div>`:''}
+    ${a.api_key_display?`<div class="api-key-display">${esc(a.api_key_display)}</div>`:''}
+    ${a.notes?`<div class="api-notes">${esc(a.notes)}</div>`:''}
+    <div class="api-card-footer">
+      ${checkedStr}
+      <span style="flex:1"></span>
+      <button class="detail-btn" onclick="pingSingleApi(${JSON.stringify(a.id)})">🔍 Test</button>
+      <button class="detail-btn danger" onclick="deleteApiEntry(${JSON.stringify(a.id)},${JSON.stringify(a.name)})">🗑</button>
+    </div>
+  </div>`;
+}
+
+async function pingAllApis(){
+  const btn=event.target;btn.disabled=true;btn.textContent='⏳ Test ediliyor...';
+  try{
+    const r=await fetch('/api/apis/ping-all',{method:'POST',headers});
+    const d=await r.json();
+    await loadApiKeys();
+    showAlert(d.results.map(x=>x.id+': '+x.status+(x.detail?' — '+x.detail:'')).join('\n'),'✅ Ping Sonuçları');
+  }catch(e){showAlert('Hata: '+e.message,'❌');}
+  finally{btn.disabled=false;btn.textContent='🔍 Hepsini Test Et';}
+}
+
+async function pingSingleApi(id){
+  const dot=document.getElementById('api-dot-'+id);
+  if(dot){dot.className='api-status-dot pinging';}
+  try{
+    const r=await fetch('/api/apis/'+encodeURIComponent(id)+'/ping',{headers});
+    const d=await r.json();
+    await loadApiKeys();
+    if(d.detail) showAlert(d.status+' — '+d.detail, id);
+  }catch(e){showAlert('Hata: '+e.message,'❌');}
+}
+
+async function deleteApiEntry(id,name){
+  showConfirm(name+' kaldırılsın mı?',async()=>{
+    await fetch('/api/apis/'+encodeURIComponent(id),{method:'DELETE',headers});
+    await loadApiKeys();
+  },'API Kaldır');
+}
+
+function showAddApiModal(){
+  openModal('🔑 Yeni API Ekle',`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label style="font-size:11px;opacity:.7">İsim *</label><input class="t-input" id="api-n-name" placeholder="OpenAI" style="width:100%"></div>
+        <div><label style="font-size:11px;opacity:.7">İkon</label><input class="t-input" id="api-n-icon" placeholder="🤖" style="width:100%"></div>
+      </div>
+      <div><label style="font-size:11px;opacity:.7">Base URL</label><input class="t-input" id="api-n-url" placeholder="https://api.example.com" style="width:100%"></div>
+      <div><label style="font-size:11px;opacity:.7">API Key</label><input class="t-input" id="api-n-key" placeholder="sk-..." style="width:100%"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label style="font-size:11px;opacity:.7">Plan</label><input class="t-input" id="api-n-plan" placeholder="Free / Pro / Enterprise" style="width:100%"></div>
+        <div><label style="font-size:11px;opacity:.7">Aylık $</label><input type="number" class="t-input" id="api-n-cost" placeholder="0" style="width:100%"></div>
+      </div>
+      <div><label style="font-size:11px;opacity:.7">Notlar</label><input class="t-input" id="api-n-notes" placeholder="Kısa açıklama" style="width:100%"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+        <button class="btn-s" onclick="closeModal()">İptal</button>
+        <button class="btn-p" onclick="submitAddApi()">+ Ekle</button>
+      </div>
+    </div>`);
+}
+
+async function submitAddApi(){
+  const name=document.getElementById('api-n-name').value.trim();
+  if(!name){showAlert('İsim zorunlu','❌');return;}
+  const payload={
+    name,
+    icon:document.getElementById('api-n-icon').value.trim()||'🔑',
+    base_url:document.getElementById('api-n-url').value.trim(),
+    api_key:document.getElementById('api-n-key').value.trim(),
+    plan:document.getElementById('api-n-plan').value.trim()||'Free',
+    monthly_cost_usd:parseFloat(document.getElementById('api-n-cost').value||0)||0,
+    notes:document.getElementById('api-n-notes').value.trim(),
+    ping_type:'generic'
+  };
+  const r=await fetch('/api/apis',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(d.error){showAlert(d.error,'❌');return;}
+  closeModal();
+  await loadApiKeys();
+}
+
+// ── X NEWS TREND SUGGEST ────────────────────────────────────────────────────
+let _xSuggestData = null;
+
+async function xSuggest(){
+  const container = document.getElementById('x-suggest-container');
+  if(!container) return;
+
+  // Zaten açıksa kapat
+  if(container.innerHTML && container.innerHTML.includes('x-suggest-panel')){
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = '<div class="x-suggest-panel"><div class="x-suggest-loading">✨ AI trend etiketleri yükleniyor... (~15-30sn)</div></div>';
+
+  try {
+    const data = await api('/api/x/suggest-tags');
+    if(data.error){ container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Hata: '+esc(data.error)+'</div></div>'; return; }
+    _xSuggestData = data;
+    renderSuggestPanel(data);
+  } catch(e) {
+    container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Yüklenemedi: '+esc(e.message)+'</div></div>';
+  }
+}
+
+function renderSuggestPanel(data){
+  const container = document.getElementById('x-suggest-container');
+  if(!container) return;
+  const existing = new Set([...(xCfg.hashtags||[]), ...(xCfg.keywords||[])]);
+  const cats = data.categories || {};
+  const all  = data.all || [];
+
+  let catsHtml = '';
+  for(const [catName, tags] of Object.entries(cats)){
+    if(!tags || !tags.length) continue;
+    const chipsHtml = tags.map(t=>{
+      const isAdded = existing.has(t) || existing.has(t.replace(/^#/,''));
+      const cls = isAdded ? 'x-sug-chip added' : 'x-sug-chip';
+      const label = t.startsWith('#') ? t : '#'+t;
+      if(isAdded) return `<span class="${cls}" title="Zaten eklendi">${esc(label)} ✓</span>`;
+      return `<span class="${cls}" onclick="xSuggestAdd(${JSON.stringify(t)})">${esc(label)}</span>`;
+    }).join('');
+    catsHtml += `<div class="x-cat-label">${esc(catName)}</div><div class="x-cat-chips">${chipsHtml}</div>`;
+  }
+
+  container.innerHTML = `<div class="x-suggest-panel">
+    <div class="x-suggest-title">
+      ✨ Trend AI Etiketleri
+      <span style="font-weight:400;font-size:12px;color:var(--text-secondary)">(${all.length} etiket — tıklayarak ekle)</span>
+      <button class="btn-s" style="margin-left:auto;font-size:11px;padding:3px 8px" onclick="document.getElementById('x-suggest-container').innerHTML=''">✕ Kapat</button>
+    </div>
+    <div class="x-suggest-cats">${catsHtml}</div>
+    <div class="x-suggest-footer">💡 Etiketler AI tarafından üretildi · 1 saat cache · Tıklayarak anahtar kelimelere ekle</div>
+  </div>`;
+}
+
+async function xSuggestAdd(tag){
+  const clean = tag.replace(/^#/,'').trim();
+  if(!clean) return;
+  // keyword olarak ekle
+  const arr = xCfg.keywords || [];
+  if(!arr.includes(clean)){
+    arr.push(clean);
+    xCfg.keywords = arr;
+    await xSave();
+  }
+  // chip'i "added" yap (sayfayı yeniden render etmeden)
+  if(_xSuggestData) renderSuggestPanel(_xSuggestData);
+}
+
 async function xRun(){
   showConfirm('X haber toplayıcıyı şimdi çalıştırmak istiyor musunuz? Bu işlem birkaç dakika sürer ve Telegram\'a rapor gönderir.',async()=>{
     const r=await fetch('/api/x/run',{method:'POST',headers});
@@ -5189,6 +6094,18 @@ api('/api/status').then(s=>{
   document.getElementById('sb-agent-team').classList.add(s.agent_team==='online'?'on':'off');
   if(s.uptime)document.getElementById('sb-uptime').textContent='Up: '+s.uptime.replace(/.*up\s*/,'').split(',')[0].trim();
 }).catch(()=>{document.getElementById('sb-browser').classList.add('off');document.getElementById('sb-pc').classList.add('off');document.getElementById('sb-agent-team').classList.add('off');});
+
+// ── MOBILE SIDEBAR ──────────────────────────────────────────────────────────
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('mob-overlay');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('open',open);
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('mob-overlay').classList.remove('open');
+}
 </script>
 </body>
 </html>

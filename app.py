@@ -1450,6 +1450,551 @@ def read_file():
 
 
 # --- TOOLS API ---
+
+
+# ─── APP BUILDER ─────────────────────────────────────────────────────────────
+APPS_DB      = Path("/root/scripts/app-builder/projects.json")
+PROJECT_DIRS = [Path("/tmp"), Path("/root/projects")]
+
+APP_TYPE_ICONS = {
+    "web": "🌐", "bot": "🤖", "api": "⚡", "python": "🐍",
+    "desktop": "🖥️", "extension": "🧩", "fullstack": "🔥", "other": "📦"
+}
+
+def load_apps_db():
+    if not APPS_DB.exists():
+        APPS_DB.parent.mkdir(parents=True, exist_ok=True)
+        return {"projects": []}
+    try:
+        return json.loads(APPS_DB.read_text())
+    except Exception:
+        return {"projects": []}
+
+def save_apps_db(db):
+    APPS_DB.write_text(json.dumps(db, ensure_ascii=False, indent=2))
+
+def detect_project_type(path):
+    p = Path(path)
+    if (p / "package.json").exists():
+        pkg = json.loads((p / "package.json").read_text())
+        deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+        if "next" in deps: return "fullstack"
+        if "react" in deps: return "web"
+        return "web"
+    if (p / "requirements.txt").exists():
+        req = (p / "requirements.txt").read_text().lower()
+        if "telegram" in req: return "bot"
+        if "flask" in req or "fastapi" in req: return "api"
+        return "python"
+    if (p / "manifest.json").exists(): return "extension"
+    if (p / "index.html").exists(): return "web"
+    return "other"
+
+def scan_project_dir(base):
+    found = []
+    try:
+        for d in Path(base).iterdir():
+            if not d.is_dir(): continue
+            if d.name.startswith(".") or d.name in ("__pycache__", "node_modules", "venv", ".git"): continue
+            has_code = any((d / f).exists() for f in ["package.json", "requirements.txt", "index.html", "main.py", "app.py", "bot.py", "server.js", "manifest.json"])
+            if has_code:
+                found.append(str(d))
+    except Exception:
+        pass
+    return found
+
+def get_all_projects():
+    db = load_apps_db()
+    tracked = {p["path"]: p for p in db.get("projects", [])}
+    # Scan dirs
+    scanned_paths = set()
+    for base in PROJECT_DIRS:
+        for path in scan_project_dir(base):
+            scanned_paths.add(path)
+    # Merge
+    all_projects = []
+    for path, info in tracked.items():
+        scanned_paths.discard(path)
+        info["tracked"] = True
+        all_projects.append(info)
+    for path in sorted(scanned_paths):
+        name = Path(path).name
+        ptype = detect_project_type(path)
+        all_projects.append({
+            "name": name, "path": path, "type": ptype,
+            "tracked": False, "added": "", "description": "",
+            "status": "unknown", "deploy_url": ""
+        })
+    return all_projects
+
+def get_container_status(project_name):
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", f"name={project_name}", "--format", "{{.Status}}"],
+            capture_output=True, text=True, timeout=5
+        )
+        out = result.stdout.strip()
+        return "running" if out else "stopped"
+    except Exception:
+        return "unknown"
+
+
+@app.route("/api/apps")
+def list_apps():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    projects = get_all_projects()
+    return jsonify(projects)
+
+
+@app.route("/api/apps", methods=["POST"])
+def create_app_request():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    ptype = (data.get("type") or "web").strip()
+    desc = (data.get("description") or "").strip()
+    deploy_target = (data.get("deploy_target") or "vps").strip()
+
+    if not name or not desc:
+        return jsonify({"error": "name and description required"}), 400
+
+    # Telegram'a bot isteği gönder
+    icon = APP_TYPE_ICONS.get(ptype, "📦")
+    deploy_note = "PC'ye gönder (pal_project)" if deploy_target == "pc" else "VPS'te çalıştır"
+    tg_msg = (
+        f"{icon} <b>Yeni Uygulama İsteği</b>\n\n"
+        f"<b>Proje:</b> {name}\n"
+        f"<b>Tip:</b> {ptype}\n"
+        f"<b>Deploy:</b> {deploy_note}\n\n"
+        f"<b>Açıklama:</b>\n{desc}"
+    )
+    try:
+        bot_token = "8513721436:AAGwqUlreX0BLSy7Abgdzp1aWYDCSIMRHt0"
+        chat_id   = "7183350213"
+        payload = json.dumps({
+            "chat_id": chat_id, "text": tg_msg,
+            "parse_mode": "HTML", "disable_web_page_preview": True
+        }).encode()
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            data=payload, headers={"Content-Type": "application/json"}
+        )
+        urllib.request.urlopen(req, timeout=10)
+    except Exception as e:
+        return jsonify({"error": f"Telegram gonderim hatasi: {e}"}), 500
+
+    # DB'ye kaydet (pending olarak)
+    now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+    db = load_apps_db()
+    db["projects"].append({
+        "name": name, "path": "", "type": ptype,
+        "tracked": True, "added": now_str,
+        "description": desc, "status": "pending",
+        "deploy_target": deploy_target, "deploy_url": ""
+    })
+    save_apps_db(db)
+    return jsonify({"ok": True, "message": "İstek Telegram'a gönderildi"})
+
+
+@app.route("/api/apps/<path:name>", methods=["DELETE"])
+def delete_app(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    # DB'den sil
+    db = load_apps_db()
+    projects = db.get("projects", [])
+    to_del = next((p for p in projects if p["name"] == name), None)
+    db["projects"] = [p for p in projects if p["name"] != name]
+    save_apps_db(db)
+    # Klasörü sil (güvenli — sadece /tmp ve /root/projects altındaki)
+    deleted_dir = False
+    import shutil as _shutil
+    # Tracked proje path'i
+    path_to_del = None
+    if to_del and to_del.get("path"):
+        path_to_del = Path(to_del["path"])
+    # Untracked: PROJECT_DIRS'te ara
+    if not path_to_del or not path_to_del.exists():
+        for base in PROJECT_DIRS:
+            candidate = base / name
+            if candidate.exists() and candidate.is_dir():
+                path_to_del = candidate
+                break
+    if path_to_del:
+        allowed = any(str(path_to_del).startswith(str(b)) for b in PROJECT_DIRS)
+        if allowed and path_to_del.exists():
+            _shutil.rmtree(path_to_del, ignore_errors=True)
+            deleted_dir = True
+    return jsonify({"ok": True, "deleted_dir": deleted_dir})
+
+
+@app.route("/api/apps/<path:name>/status")
+def app_status(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    status = get_container_status(name)
+    return jsonify({"name": name, "status": status})
+
+
+@app.route("/api/apps/<path:name>/logs")
+def app_logs(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    try:
+        result = subprocess.run(
+            ["docker", "logs", name, "--tail", "100"],
+            capture_output=True, text=True, timeout=10
+        )
+        logs = result.stdout + result.stderr
+        return jsonify({"logs": logs or "(log yok)"})
+    except Exception as e:
+        return jsonify({"logs": f"Hata: {e}"})
+
+
+@app.route("/api/apps/<path:name>/stop", methods=["POST"])
+def stop_app(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    try:
+        subprocess.run(["docker", "stop", name], capture_output=True, timeout=15)
+        subprocess.run(["docker", "rm", name], capture_output=True, timeout=10)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/apps/<path:name>/files")
+def app_files(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    # Proje klasörünü bul
+    db = load_apps_db()
+    tracked = next((p for p in db.get("projects", []) if p["name"] == name), None)
+    path = None
+    if tracked and tracked.get("path"):
+        path = Path(tracked["path"])
+    else:
+        for base in PROJECT_DIRS:
+            candidate = base / name
+            if candidate.exists():
+                path = candidate
+                break
+    if not path or not path.exists():
+        return jsonify({"error": "proje bulunamadi"}), 404
+    files = []
+    try:
+        for f in sorted(path.rglob("*")):
+            if any(part in (f.parts) for part in ["node_modules", ".git", "__pycache__", "venv", ".next"]):
+                continue
+            if f.is_file():
+                rel = str(f.relative_to(path))
+                size = f.stat().st_size
+                files.append({"path": rel, "size": size})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"name": name, "files": files[:200]})
+
+
+
+# ═══════════════════════════════════════════════════════════════
+# APIS TAB — API Limit & Status Tracker
+# ═══════════════════════════════════════════════════════════════
+APIS_DB_PATH = Path("/root/scripts/dashboard/apis_config.json")
+
+def load_apis_db():
+    if not APIS_DB_PATH.exists():
+        return {"apis": []}
+    try:
+        return json.loads(APIS_DB_PATH.read_text())
+    except Exception:
+        return {"apis": []}
+
+def save_apis_db(db):
+    APIS_DB_PATH.write_text(json.dumps(db, ensure_ascii=False, indent=2))
+
+def _ping_api(api):
+    import ssl
+    ctx = ssl.create_default_context()
+    ptype = api.get("ping_type", "generic")
+    key   = api.get("api_key", "")
+    base  = api.get("base_url", "")
+    result = {"status": "unknown", "remaining": {}, "detail": ""}
+    try:
+        if ptype == "minimax":
+            body = json.dumps({"model":"MiniMax-M2.5","max_tokens":1,
+                               "messages":[{"role":"user","content":"hi"}]}).encode()
+            req = urllib.request.Request(
+                f"{base}/v1/messages", data=body,
+                headers={"x-api-key": key, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"})
+            with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
+                d = json.loads(r.read())
+            usage = d.get("usage", {})
+            result.update({"status":"online","remaining":{
+                "input_tokens_used": usage.get("input_tokens",0),
+                "output_tokens_used": usage.get("output_tokens",0)
+            },"detail":"Ping OK"})
+
+        elif ptype == "telegram":
+            req = urllib.request.Request(
+                f"https://api.telegram.org/bot{key}/getMe")
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            if d.get("ok"):
+                bot = d.get("result", {})
+                result.update({"status":"online","remaining":{},
+                    "detail": f"@{bot.get('username','?')} — {bot.get('first_name','?')}"})
+            else:
+                result.update({"status":"error","detail":str(d)})
+
+        elif ptype == "github":
+            req = urllib.request.Request(
+                "https://api.github.com/rate_limit",
+                headers={"Authorization": f"token {key}",
+                         "User-Agent": "OpenClaw-Dashboard"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            core = d.get("resources",{}).get("core",{})
+            search = d.get("resources",{}).get("search",{})
+            result.update({"status":"online","remaining":{
+                "core_remaining": core.get("remaining", 0),
+                "core_limit": core.get("limit", 5000),
+                "search_remaining": search.get("remaining", 0),
+                "search_limit": search.get("limit", 30)
+            },"detail":f"Core: {core.get('remaining',0)}/{core.get('limit',5000)}"})
+
+        elif ptype == "firecrawl":
+            req = urllib.request.Request(
+                "https://api.firecrawl.dev/v1/team/billing",
+                headers={"Authorization": f"Bearer {key}"})
+            with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+                raw = r.read()
+            d = json.loads(raw)
+            data_d = d.get("data", d)
+            remaining = data_d.get("remainingCredits", data_d.get("remaining_credits", None))
+            total = data_d.get("totalCredits", data_d.get("total_credits", None))
+            result.update({"status":"online","remaining":{
+                "credits_remaining": remaining,
+                "credits_total": total
+            },"detail":f"Credits: {remaining}/{total}"})
+
+        elif ptype == "twitter":
+            req = urllib.request.Request(
+                "https://api.twitter.com/2/users/me",
+                headers={"Authorization": f"Bearer {key}"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                headers_resp = dict(r.headers)
+                d = json.loads(r.read())
+            rem = headers_resp.get("x-rate-limit-remaining") or headers_resp.get("X-Rate-Limit-Remaining")
+            lim = headers_resp.get("x-rate-limit-limit") or headers_resp.get("X-Rate-Limit-Limit")
+            result.update({"status":"online","remaining":{
+                "rate_limit_remaining": rem,
+                "rate_limit": lim
+            },"detail":f"User: {d.get('data',{}).get('username','?')}"})
+
+        else:
+            req = urllib.request.Request(base, headers={"User-Agent":"OpenClaw"})
+            with urllib.request.urlopen(req, timeout=6, context=ctx) as r:
+                result.update({"status":"online","detail":f"HTTP {r.status}"})
+
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            result.update({"status":"auth_error","detail":f"HTTP {e.code} — key gecersiz"})
+        elif e.code == 429:
+            result.update({"status":"rate_limited","detail":"Rate limit asildi"})
+        else:
+            result.update({"status":"error","detail":f"HTTP {e.code}"})
+    except Exception as e:
+        result.update({"status":"offline","detail":str(e)[:80]})
+
+    return result
+
+
+@app.route("/api/apis")
+def list_apis():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_apis_db()
+    return jsonify(db.get("apis", []))
+
+
+@app.route("/api/apis", methods=["POST"])
+def add_api():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    db = load_apis_db()
+    new_id = (data.get("id") or data.get("name","api").lower().replace(" ","_"))
+    if any(a["id"] == new_id for a in db.get("apis",[])):
+        return jsonify({"error": "API zaten mevcut"}), 409
+    key = data.get("api_key","")
+    entry = {
+        "id": new_id,
+        "name": data.get("name", new_id),
+        "icon": data.get("icon", "🔑"),
+        "base_url": data.get("base_url",""),
+        "api_key_display": key[:8]+"..."+key[-5:] if len(key)>15 else key,
+        "api_key": key,
+        "plan": data.get("plan","Free"),
+        "monthly_cost_usd": float(data.get("monthly_cost_usd",0) or 0),
+        "limits": data.get("limits",{}),
+        "models": data.get("models",[]),
+        "ping_type": data.get("ping_type","generic"),
+        "tags": data.get("tags",[]),
+        "notes": data.get("notes",""),
+        "status": "unknown",
+        "last_checked": "",
+        "remaining": {}
+    }
+    db.setdefault("apis",[]).append(entry)
+    save_apis_db(db)
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/apis/<api_id>", methods=["DELETE"])
+def delete_api_entry(api_id):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_apis_db()
+    db["apis"] = [a for a in db.get("apis",[]) if a["id"] != api_id]
+    save_apis_db(db)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/apis/<api_id>", methods=["PUT"])
+def update_api_entry(api_id):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    db = load_apis_db()
+    for api in db.get("apis",[]):
+        if api["id"] == api_id:
+            for k, v in data.items():
+                if k != "id":
+                    api[k] = v
+            break
+    save_apis_db(db)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/apis/<api_id>/ping")
+def ping_api_entry(api_id):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_apis_db()
+    api = next((a for a in db.get("apis",[]) if a["id"] == api_id), None)
+    if not api:
+        return jsonify({"error": "API bulunamadi"}), 404
+    res = _ping_api(api)
+    now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+    api["status"] = res["status"]
+    api["remaining"] = res["remaining"]
+    api["last_checked"] = now_str
+    save_apis_db(db)
+    return jsonify({"ok": True, "status": res["status"],
+                    "remaining": res["remaining"], "detail": res["detail"]})
+
+
+@app.route("/api/apis/ping-all", methods=["POST"])
+def ping_all_apis():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_apis_db()
+    now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+    results = []
+    for api in db.get("apis",[]):
+        res = _ping_api(api)
+        api["status"] = res["status"]
+        api["remaining"] = res["remaining"]
+        api["last_checked"] = now_str
+        results.append({"id": api["id"], "status": res["status"], "detail": res["detail"]})
+    save_apis_db(db)
+    return jsonify({"ok": True, "results": results})
+
+@app.route("/api/apps/<path:name>/register", methods=["POST"])
+def register_app(name):
+    """Bot tarafindan proje kaydedildiginde cagrilir."""
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    db = load_apps_db()
+    # Var olan pending kaydı güncelle veya yeni ekle
+    existing = next((p for p in db.get("projects", []) if p["name"] == name), None)
+    now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+    if existing:
+        existing.update({
+            "path": data.get("path", existing.get("path", "")),
+            "status": data.get("status", "ready"),
+            "deploy_url": data.get("deploy_url", existing.get("deploy_url", "")),
+            "built_at": now_str,
+        })
+    else:
+        db.setdefault("projects", []).append({
+            "name": name,
+            "path": data.get("path", ""),
+            "type": data.get("type", "other"),
+            "tracked": True,
+            "added": now_str,
+            "built_at": now_str,
+            "description": data.get("description", ""),
+            "status": data.get("status", "ready"),
+            "deploy_target": data.get("deploy_target", "vps"),
+            "deploy_url": data.get("deploy_url", ""),
+        })
+    save_apps_db(db)
+    return jsonify({"ok": True})
+
+
+
+# ─── OPENCLAW HEALTH ─────────────────────────────────────────────────────────
+import subprocess, time as _time
+
+_health_cache = {"data": None, "ts": 0}
+_HEALTH_TTL = 300  # 5 dakika cache
+
+def get_health_data(force=False):
+    now = _time.time()
+    if not force and _health_cache["data"] and (now - _health_cache["ts"]) < _HEALTH_TTL:
+        return _health_cache["data"]
+    try:
+        result = subprocess.run(
+            ["openclaw", "status", "--json"],
+            capture_output=True, text=True, timeout=20
+        )
+        data = json.loads(result.stdout)
+        _health_cache["data"] = data
+        _health_cache["ts"] = now
+        return data
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.route("/api/health")
+def get_health():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    force = request.args.get("force") == "1"
+    data = get_health_data(force=force)
+    return jsonify(data)
+
+
+@app.route("/api/health/update", methods=["POST"])
+def trigger_update():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    try:
+        subprocess.Popen(
+            ["openclaw", "update", "--yes"],
+            stdout=open("/tmp/openclaw-update.log", "w"),
+            stderr=subprocess.STDOUT,
+        )
+        return jsonify({"ok": True, "message": "Guncelleme baslatildi, ~1-2 dk surer"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 TOOLS_DB_PATH = Path("/root/scripts/ai-tool-evaluator/tools_db.json")
 
 
@@ -1502,6 +2047,8 @@ def get_tool_report(name):
         "decision": tool.get("decision", ""),
         "evaluating": tool.get("evaluating", False),
         "report": tool.get("report", ""),
+        "history": tool.get("history", []),
+        "tags": tool.get("tags", []),
     })
 
 
@@ -1592,6 +2139,23 @@ def patch_tool(name):
             db["tools"][new_name]["name"] = new_name
             save_tools_db(db)
             return jsonify({"ok": True, "renamed": new_name})
+    save_tools_db(db)
+    return jsonify({"ok": True})
+
+
+# --- TOOLS: GECMIS SIL ---
+@app.route("/api/tools/<path:name>/history", methods=["DELETE"])
+def clear_tool_history(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_tools_db()
+    if name not in db.get("tools", {}):
+        return jsonify({"error": "not found"}), 404
+    t = db["tools"][name]
+    t["history"] = []
+    t["last_eval"] = ""
+    t["decision"] = ""
+    t["report"] = ""
     save_tools_db(db)
     return jsonify({"ok": True})
 
@@ -1767,6 +2331,71 @@ def put_x_config():
             pass
     save_x_cfg(cfg)
     return jsonify({"ok": True, "config": cfg})
+
+
+# ─── X NEWS — TREND TAG SUGGEST ──────────────────────────────────────────────
+_MINIMAX_BASE = "https://api.minimax.io/anthropic"
+_MINIMAX_KEY  = "sk-api-t1bRhBnFlBvqDUUJFY6KGM5dfUhegQIGTKHw0Fllp9G-YC8bIagjaEx7HH7y1upWY8KBL_a34LG_wGIzuKZcZ_DExCC2c6yiT1jZM_Mf06lNWkcK-M-UVos"
+_MINIMAX_MODEL = "MiniMax-M2.5"
+
+_suggest_cache = {"data": None, "ts": 0}
+_SUGGEST_TTL = 3600  # 1 saat cache
+
+@app.route("/api/x/suggest-tags")
+def x_suggest_tags():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    import _thread as _time_mod
+    now = _time.time()
+    if _suggest_cache["data"] and (now - _suggest_cache["ts"]) < _SUGGEST_TTL:
+        return jsonify(_suggest_cache["data"])
+
+    prompt = """List 70 trending Twitter/X hashtags and keywords about AI, LLM, bots, and AI tools (last 7 days). English only. Return ONLY valid JSON, no markdown, no explanation:
+{"categories":{"LLM Models":["ChatGPT","GPT4o","Claude","Gemini","Llama","Mistral","DeepSeek","Grok","o3","Qwen"],"AI Tools":["Cursor","Copilot","Perplexity","Midjourney","Sora","ElevenLabs","Runway","Kling","Pika","HeyGen"],"Agents Automation":["AIAgent","AutoGPT","CrewAI","LangGraph","n8n","Zapier","MakeAI","AgentAI","MultiAgent","WorkflowAI"],"Dev Tech":["LangChain","RAG","VectorDB","Ollama","HuggingFace","OpenSource","FineTuning","Embeddings","MCP","APIdev"],"Trending":["ArtificialIntelligence","MachineLearning","GenerativeAI","AINews","TechNews","FutureOfAI","AIart","DeepLearning","NLP","ComputerVision"]},"all":["ChatGPT","GPT4o","Claude","Gemini","Llama","Mistral","DeepSeek","Grok","o3","Qwen","Cursor","Copilot","Perplexity","Midjourney","Sora","ElevenLabs","Runway","Kling","Pika","HeyGen","AIAgent","AutoGPT","CrewAI","LangGraph","n8n","Zapier","MakeAI","AgentAI","MultiAgent","WorkflowAI","LangChain","RAG","VectorDB","Ollama","HuggingFace","OpenSource","FineTuning","Embeddings","MCP","APIdev","ArtificialIntelligence","MachineLearning","GenerativeAI","AINews","TechNews","FutureOfAI","AIart","DeepLearning","NLP","ComputerVision"]}
+Update this list with the LATEST trending tags you know about. Add 20-30 more relevant tags. Return complete updated JSON only."""
+
+    try:
+        body = json.dumps({
+            "model": _MINIMAX_MODEL,
+            "max_tokens": 4096,
+            "messages": [{"role": "user", "content": prompt}]
+        }).encode()
+        req = urllib.request.Request(
+            f"{_MINIMAX_BASE}/v1/messages",
+            data=body,
+            headers={
+                "x-api-key": _MINIMAX_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = json.loads(resp.read())
+        # content dizisinde thinking + text blokları olabilir
+        text_block = next((b for b in raw.get("content", []) if b.get("type") == "text"), None)
+        if not text_block:
+            text_block = next((b for b in raw.get("content", []) if "text" in b), None)
+        if not text_block:
+            return jsonify({"error": "no text block in response"}), 500
+        text = text_block["text"].strip()
+        # JSON parse
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        data = json.loads(text)
+        # all listesi yoksa categories'den derle
+        if "all" not in data or not data["all"]:
+            all_tags = []
+            for cats in data.get("categories", {}).values():
+                all_tags.extend(cats)
+            data["all"] = all_tags
+        _suggest_cache["data"] = data
+        _suggest_cache["ts"] = _time.time()
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/x/run", methods=["POST"])
 def run_x_news():

@@ -1,0 +1,135 @@
+{
+  "apis": [
+    {
+      "id": "minimax",
+      "name": "MiniMax",
+      "icon": "🤖",
+      "base_url": "https://api.minimax.io/anthropic",
+      "api_key_display": "sk-api-t1bRh...UVos",
+      "api_key": "",
+      "plan": "Free",
+      "monthly_cost_usd": 0,
+      "limits": {
+        "context_window": 200000,
+        "max_output_tokens": 8192,
+        "rpm": 60,
+        "monthly_tokens": null
+      },
+      "models": [
+        "MiniMax-M2.1",
+        "MiniMax-M2.5"
+      ],
+      "ping_type": "minimax",
+      "tags": [
+        "ai",
+        "llm",
+        "openclaw"
+      ],
+      "notes": "OpenClaw ana modeli — ücretsiz, MiniMax portal",
+      "status": "online",
+      "last_checked": "2026-02-28T18:48:43.064222+03:00",
+      "remaining": {
+        "input_tokens_used": 42,
+        "output_tokens_used": 3
+      }
+    },
+    {
+      "id": "twitter",
+      "name": "Twitter / X API",
+      "icon": "𝕏",
+      "base_url": "https://api.twitter.com",
+      "api_key_display": "AAAAA...5SU07",
+      "api_key": "",
+      "plan": "Free",
+      "monthly_cost_usd": 0,
+      "limits": {
+        "monthly_read_tweets": 1500,
+        "monthly_write_tweets": 500,
+        "rpm": 15
+      },
+      "ping_type": "twitter",
+      "tags": [
+        "social",
+        "x-news"
+      ],
+      "notes": "X News için kullanılıyor — Free plan (1500 okuma/ay)",
+      "status": "auth_error",
+      "last_checked": "2026-02-28T18:48:43.064222+03:00",
+      "remaining": {}
+    },
+    {
+      "id": "firecrawl",
+      "name": "Firecrawl",
+      "icon": "🔥",
+      "base_url": "https://api.firecrawl.dev",
+      "api_key_display": "fc-f01e...cd4e8",
+      "api_key": "",
+      "plan": "Free",
+      "monthly_cost_usd": 0,
+      "limits": {
+        "monthly_credits": 500,
+        "rpm": 10
+      },
+      "ping_type": "firecrawl",
+      "tags": [
+        "scraping",
+        "research"
+      ],
+      "notes": "Web scraping — research-agent tarafından kullanılıyor",
+      "status": "error",
+      "last_checked": "2026-02-28T18:48:43.064222+03:00",
+      "remaining": {}
+    },
+    {
+      "id": "telegram",
+      "name": "Telegram Bot",
+      "icon": "📱",
+      "base_url": "https://api.telegram.org",
+      "api_key_display": "8513...Ht0",
+      "api_key": "",
+      "plan": "Free",
+      "monthly_cost_usd": 0,
+      "limits": {
+        "msg_per_second": 30,
+        "msg_per_minute_per_chat": 20
+      },
+      "ping_type": "telegram",
+      "tags": [
+        "notification",
+        "main"
+      ],
+      "notes": "Ana Telegram botu — tüm agent bildirimleri",
+      "status": "online",
+      "last_checked": "2026-02-28T18:48:43.064222+03:00",
+      "remaining": {}
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "icon": "🐙",
+      "base_url": "https://api.github.com",
+      "api_key_display": "ghp_MM...N0V",
+      "api_key": "",
+      "plan": "Free",
+      "monthly_cost_usd": 0,
+      "limits": {
+        "rpm": 5000,
+        "hourly_requests": 5000
+      },
+      "ping_type": "github",
+      "tags": [
+        "git",
+        "devops"
+      ],
+      "notes": "palamut62 hesabı — repo yönetimi",
+      "status": "online",
+      "last_checked": "2026-02-28T18:48:43.064222+03:00",
+      "remaining": {
+        "core_remaining": 4998,
+        "core_limit": 5000,
+        "search_remaining": 30,
+        "search_limit": 30
+      }
+    }
+  ]
+}
