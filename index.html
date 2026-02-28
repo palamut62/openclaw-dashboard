@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Dashboard</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2128;
+  --border: #30363d;
+  --border-hover: #484f58;
+  --text: #e6edf3;
+  --text-secondary: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #d29922;
+  --purple: #bc8cff;
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+/* Header */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-logo { font-size: 26px; }
+.header h1 { font-size: 18px; font-weight: 600; color: var(--accent); }
+.header .conn { margin-left: auto; font-size: 12px; padding: 4px 12px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); }
+.header .conn.ok { color: var(--green); border-color: #238636; }
+.header .conn.err { color: var(--red); border-color: #da3633; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  user-select: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Container */
+.container { max-width: 1440px; margin: 0 auto; padding: 24px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* Agent Grid */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+}
+.agent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.agent-card:hover { border-color: var(--border-hover); }
+
+.agent-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.agent-emoji { font-size: 28px; flex-shrink: 0; }
+.agent-info { flex: 1; min-width: 0; }
+.agent-name { font-size: 15px; font-weight: 600; }
+.agent-role { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-id { font-size: 11px; color: var(--text-secondary); background: var(--surface2); padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+
+/* Skills in agent card */
+.agent-skills {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.skill-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 14px;
+  background: #1f6feb22;
+  color: var(--accent);
+  border: 1px solid #1f6feb44;
+  cursor: pointer;
+  transition: all .15s;
+}
+.skill-tag:hover { background: #1f6feb44; border-color: var(--accent); }
+
+/* File list in agent card */
+.agent-files { padding: 8px; }
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .1s;
+}
+.file-item:hover { background: var(--surface2); }
+.file-icon { font-size: 14px; opacity: 0.6; flex-shrink: 0; }
+.file-name { flex: 1; }
+.file-arrow { color: var(--text-secondary); font-size: 12px; opacity: 0; transition: opacity .1s; }
+.file-item:hover .file-arrow { opacity: 1; }
+
+/* No skills placeholder */
+.no-skills {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Modal */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 200;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-backdrop.open { display: flex; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn { from { opacity:0; transform: translateY(-10px); } to { opacity:1; transform: translateY(0); } }
+
+.modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.modal-head h3 { flex: 1; font-size: 15px; font-weight: 600; }
+.modal-close-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text-secondary); font-size: 18px; cursor: pointer;
+  transition: all .1s;
+}
+.modal-close-btn:hover { background: var(--surface2); color: var(--text); }
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-body pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  background: var(--bg);
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* Ideas page */
+.ideas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.ideas-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.date-divider {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 8px 0;
+  margin: 20px 0 10px;
+  border-bottom: 1px solid var(--border);
+}
+.idea-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.idea-card:hover { border-color: var(--accent); }
+.idea-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.idea-period {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.idea-period.gece { background: #1a1b3a; color: #818cf8; }
+.idea-period.gunduz { background: #2d2006; color: var(--orange); }
+.idea-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.idea-problem { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.idea-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.idea-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+/* Idea detail in modal */
+.idea-detail-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.idea-detail-row:last-child { border-bottom: none; }
+.idea-detail-label {
+  flex-shrink: 0;
+  width: 100px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.idea-detail-value { color: var(--text); line-height: 1.6; }
+
+/* System page */
+.sys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.sys-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.sys-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.sys-value { font-size: 16px; font-weight: 600; }
+.sys-value.online { color: var(--green); }
+.sys-value.offline { color: var(--red); }
+
+.sys-section { margin-bottom: 20px; }
+.sys-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 10px;
+}
+.sys-pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.docker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.docker-name { font-weight: 600; min-width: 180px; }
+.docker-status { color: var(--green); flex: 1; }
+.docker-ports { color: var(--text-secondary); font-size: 12px; }
+
+/* Cron page */
+.cron-list { display: flex; flex-direction: column; gap: 12px; }
+.cron-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.cron-card:hover { border-color: var(--border-hover); }
+.cron-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.cron-icon { font-size: 24px; flex-shrink: 0; }
+.cron-info { flex: 1; min-width: 0; }
+.cron-name { font-size: 15px; font-weight: 600; }
+.cron-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.cron-schedule {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.cron-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: #1f6feb18;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.cron-freq { font-size: 11px; color: var(--text-secondary); }
+.cron-raw { font-size: 10px; color: var(--text-secondary); font-family: monospace; opacity: .6; }
+
+.cron-details {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+  background: var(--surface2);
+}
+.cron-details.open { display: block; }
+
+.cron-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.cron-meta-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.cron-meta-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.cron-meta-value { font-size: 13px; font-weight: 500; }
+
+.cron-log-section { margin-top: 12px; }
+.cron-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.cron-log-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+.cron-log-pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.cron-actions { display: flex; gap: 8px; margin-top: 12px; }
+.cron-btn {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cron-btn:hover { background: var(--surface2); border-color: var(--border-hover); }
+.cron-btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+.cron-btn.primary:hover { background: #388bfd; }
+.cron-btn.running { background: var(--green); border-color: var(--green); color: #000; pointer-events: none; }
+
+.cron-state-json {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--purple);
+  white-space: pre-wrap;
+  margin-top: 8px;
+}
+
+.loading { text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: 14px; }
+.empty { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+
+/* Tools page */
+.tools-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.tools-title { font-size: 16px; font-weight: 600; }
+.add-tool-form { display: flex; gap: 8px; }
+.add-tool-input {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; color: var(--text);
+  font-size: 13px; min-width: 220px;
+}
+.add-tool-input:focus { outline: none; border-color: var(--accent); }
+.btn-primary {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+}
+.btn-primary:hover { opacity: 0.85; }
+.btn-sm {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px;
+}
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { border-color: #f85149; color: #f85149; }
+.btn-danger:hover { background: rgba(248,81,73,.1); }
+.tool-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; margin-bottom: 12px;
+}
+.tool-card:hover { border-color: var(--accent); }
+.tool-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tool-name { font-weight: 600; font-size: 15px; flex: 1; }
+.decision-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: .5px;
+}
+.badge-adopt { background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid rgba(63,185,80,.3); }
+.badge-wait  { background: rgba(210,153,34,.15); color: #d2991f; border: 1px solid rgba(210,153,34,.3); }
+.badge-ignore { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid rgba(248,81,73,.3); }
+.badge-unknown { background: var(--surface2); color: var(--text-secondary); border: 1px solid var(--border); }
+.badge-evaluating { background: rgba(88,166,255,.15); color: #58a6ff; border: 1px solid rgba(88,166,255,.3); }
+.tool-meta { font-size: 12px; color: var(--text-secondary); }
+.tool-actions { display: flex; gap: 6px; }
+.tool-report-preview { font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+.tools-empty { text-align: center; padding: 40px; color: var(--text-secondary); font-size: 14px; }
+.tools-count { font-size: 12px; color: var(--text-secondary); }
+
+/* Tool report modal */
+.report-html { font-size: 13px; line-height: 1.7; color: var(--text); }
+
+
+/* Tag sistemi */
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(88,166,255,.12); color: #58a6ff;
+  border: 1px solid rgba(88,166,255,.25); border-radius: 12px;
+  padding: 2px 8px; font-size: 11px; cursor: default;
+}
+.tag-chip .tag-x { cursor: pointer; opacity: .6; font-size: 12px; line-height: 1; }
+.tag-chip .tag-x:hover { opacity: 1; color: #f85149; }
+.tag-add-btn { background: none; border: 1px dashed var(--border); border-radius: 12px;
+  padding: 2px 8px; font-size: 11px; color: var(--text-secondary); cursor: pointer; }
+.tag-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tag-input-inline { background: var(--surface2); border: 1px solid var(--accent);
+  border-radius: 8px; padding: 2px 8px; color: var(--text); font-size: 11px;
+  width: 110px; outline: none; }
+.tag-filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; align-items: center; }
+.tag-filter-chip { padding: 3px 10px; border-radius: 12px; font-size: 11px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); }
+.tag-filter-chip:hover, .tag-filter-chip.active { border-color: var(--accent); color: var(--accent);
+  background: rgba(88,166,255,.08); }
+.tag-filter-chip.all-chip { font-weight: 600; }
+
+/* Studio sekmesi */
+.studio-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+@media (max-width: 800px) { .studio-layout { grid-template-columns: 1fr; } }
+.studio-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.studio-panel-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.studio-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 5px; margin-top: 12px; }
+.studio-label:first-child { margin-top: 0; }
+.studio-input { width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px; box-sizing: border-box; outline: none; }
+.studio-input:focus { border-color: var(--accent); }
+.studio-select { width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; cursor: pointer; }
+.studio-select:focus { border-color: var(--accent); }
+.studio-btn-row { display: flex; gap: 8px; margin-top: 16px; }
+.studio-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600; }
+.studio-btn-main { background: var(--accent); color: #fff; }
+.studio-btn-main:hover { opacity: .85; }
+.studio-btn-all { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+.studio-btn-all:hover { border-color: var(--accent); color: var(--accent); }
+.history-empty { text-align: center; padding: 30px; color: var(--text-secondary); font-size: 13px; }
+.hist-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; margin-bottom: 8px; }
+.hist-item:hover { border-color: var(--accent); }
+.hist-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.hist-topic { font-weight: 600; font-size: 13px; flex: 1; }
+.hist-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; border: 1px solid var(--border);
+  color: var(--text-secondary); background: var(--surface); text-transform: uppercase; }
+.hist-generating { color: #58a6ff; border-color: rgba(88,166,255,.3); background: rgba(88,166,255,.08); }
+.hist-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; }
+.hist-preview { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.hist-actions { display: flex; gap: 6px; margin-top: 8px; }
+.format-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.format-btn { padding: 6px 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2);
+  color: var(--text-secondary); font-size: 11px; cursor: pointer; text-align: center; }
+.format-btn:hover, .format-btn.selected { border-color: var(--accent); color: var(--accent);
+  background: rgba(88,166,255,.08); font-weight: 600; }
+.style-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 6px; }
+.style-btn { padding: 5px 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2);
+  color: var(--text-secondary); font-size: 10px; cursor: pointer; text-align: center; }
+.style-btn:hover, .style-btn.selected { border-color: #d2991f; color: #d2991f;
+  background: rgba(210,153,34,.08); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-logo">🦅</span>
+  <h1>OpenClaw Dashboard</h1>
+  <span class="conn" id="conn">Bağlanıyor...</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-page="agents">Agents</div>
+  <div class="tab" data-page="ideas">Ideas</div>
+  <div class="tab" data-page="cron">Cron Jobs</div>
+  <div class="tab" data-page="system">System</div>
+  <div class="tab" data-page="tools">Tools</div>
+  <div class="tab" data-page="studio">Studio</div>
+</div>
+
+<div class="container">
+  <div class="page active" id="page-agents"><div class="loading">Yükleniyor...</div></div>
+  <div class="page" id="page-ideas"><div class="loading">Yükleniyor...</div></div>
+  <div class="page" id="page-cron"><div class="loading">Yükleniyor...</div></div>
+  <div class="page" id="page-system"><div class="loading">Yükleniyor...</div></div>
+  <div class="page" id="page-tools"><div class="loading">Yükleniyor...</div></div>
+  <div class="page" id="page-studio"><div class="loading">Yükleniyor...</div></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close-btn" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const KEY = 'nootle-dashboard-2024-secret';
+const headers = { 'X-API-Key': KEY };
+
+// ---- Storage for file/skill contents ----
+const store = [];
+function addToStore(title, content) {
+  const idx = store.length;
+  store.push({ title, content });
+  return idx;
+}
+
+// ---- Modal ----
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modal-title');
+const modalBody = document.getElementById('modal-body');
+
+function openModal(title, bodyHtml) {
+  modalTitle.textContent = title;
+  modalBody.innerHTML = bodyHtml;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modal-close').onclick = closeModal;
+modal.onclick = e => { if (e.target === modal) closeModal(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function openFileModal(idx) {
+  const item = store[idx];
+  if (!item) return;
+  openModal(item.title, `<pre>${escapeHtml(item.content)}</pre>`);
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Tabs ----
+const loaded = {};
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const page = tab.dataset.page;
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'ideas' && !loaded.ideas) loadIdeas();
+    if (page === 'cron' && !loaded.cron) loadCron();
+    if (page === 'system' && !loaded.system) loadStatus();
+    if (page === 'tools') loadTools();
+    if (page === 'studio') loadStudio();
+  };
+});
+
+async function api(path) {
+  const r = await fetch(path, { headers });
+  if (!r.ok) throw new Error(r.statusText);
+  return r.json();
+}
+
+// ---- File icon map ----
+function fileIcon(name) {
+  if (name === 'SOUL.md') return '💜';
+  if (name === 'BRAIN.md') return '🧠';
+  if (name === 'IDENTITY.md') return '🪪';
+  if (name === 'TOOLS.md') return '🔧';
+  if (name === 'RULES.md') return '📏';
+  if (name === 'HEARTBEAT.md') return '💓';
+  if (name === 'AGENTS.md') return '🤝';
+  if (name === 'LESSONS.md') return '📖';
+  return '📄';
+}
+
+// ---- AGENTS ----
+async function loadAgents() {
+  try {
+    const agents = await api('/api/agents');
+    const conn = document.getElementById('conn');
+    conn.textContent = agents.length + ' agent aktif';
+    conn.classList.add('ok');
+
+    let html = '<div class="agent-grid">';
+    for (const a of agents) {
+      const emoji = a.emoji || '🤖';
+      const name = a.name || a.id;
+      const role = a.role || '';
+      const files = Object.keys(a.files || {});
+      const skills = a.skills || [];
+
+      html += '<div class="agent-card">';
+      // Header
+      html += `<div class="agent-header">
+        <span class="agent-emoji">${emoji}</span>
+        <div class="agent-info">
+          <div class="agent-name">${escapeHtml(name)}</div>
+          <div class="agent-role">${escapeHtml(role)}</div>
+        </div>
+        <span class="agent-id">${a.id}</span>
+      </div>`;
+
+      // Skills
+      if (skills.length > 0) {
+        html += '<div class="agent-skills">';
+        for (const s of skills) {
+          if (s.content) {
+            const idx = addToStore(name + ' / ' + s.name + ' (Skill)', s.content);
+            html += `<span class="skill-tag" onclick="openFileModal(${idx})">⚡ ${escapeHtml(s.name)}</span>`;
+          } else {
+            html += `<span class="skill-tag">⚡ ${escapeHtml(s.name)}</span>`;
+          }
+        }
+        html += '</div>';
+      } else {
+        html += '<div class="no-skills">Skill tanımlı değil</div>';
+      }
+
+      // Files
+      html += '<div class="agent-files">';
+      for (const f of files) {
+        const idx = addToStore(name + ' / ' + f, a.files[f]);
+        html += `<div class="file-item" onclick="openFileModal(${idx})">
+          <span class="file-icon">${fileIcon(f)}</span>
+          <span class="file-name">${f}</span>
+          <span class="file-arrow">→</span>
+        </div>`;
+      }
+      html += '</div>';
+
+      html += '</div>';
+    }
+    html += '</div>';
+    document.getElementById('page-agents').innerHTML = html;
+  } catch (e) {
+    const conn = document.getElementById('conn');
+    conn.textContent = 'Bağlantı hatası';
+    conn.classList.add('err');
+    document.getElementById('page-agents').innerHTML = '<div class="empty">VPS bağlantısı kurulamadı.<br>Tailscale aktif mi kontrol edin.</div>';
+  }
+}
+
+// ---- IDEAS ----
+async function loadIdeas() {
+  loaded.ideas = true;
+  try {
+    const ideas = await api('/api/ideas');
+    if (!ideas || !ideas.length) {
+      document.getElementById('page-ideas').innerHTML = '<div class="empty">Henüz fikir arşivi boş.</div>';
+      return;
+    }
+    const sorted = ideas.slice().reverse();
+    let html = `<div class="ideas-header"><h2 style="font-size:18px">Fikir Arşivi</h2><span class="ideas-count">${ideas.length} fikir</span></div>`;
+
+    let lastDate = '';
+    for (const idea of sorted) {
+      if (idea.date !== lastDate) {
+        lastDate = idea.date;
+        html += `<div class="date-divider">📅 ${idea.date}</div>`;
+      }
+      const periodClass = (idea.period || '').includes('gece') ? 'gece' : 'gunduz';
+      const periodLabel = (idea.period || '').includes('gece') ? '🌙 Gece' : '☀️ Gündüz';
+
+      html += `<div class="idea-card" onclick='showIdeaDetail(${JSON.stringify(JSON.stringify(idea))})'>
+        <div class="idea-meta">
+          <span class="idea-period ${periodClass}">${periodLabel}</span>
+          <span>${idea.time || ''}</span>
+        </div>
+        <div class="idea-title">${escapeHtml(idea.name || idea.title || 'Fikir')}</div>
+        <div class="idea-problem">${escapeHtml(idea.problem || idea.description || '')}</div>
+        <div class="idea-tags">
+          ${idea.difficulty ? `<span class="idea-tag">Zorluk: ${escapeHtml(idea.difficulty)}</span>` : ''}
+          ${idea.tech ? `<span class="idea-tag">${escapeHtml(idea.tech)}</span>` : ''}
+          ${idea.audience ? `<span class="idea-tag">${escapeHtml(idea.audience)}</span>` : ''}
+        </div>
+      </div>`;
+    }
+    document.getElementById('page-ideas').innerHTML = html;
+  } catch (e) {
+    document.getElementById('page-ideas').innerHTML = '<div class="empty">Fikirler yüklenemedi.</div>';
+  }
+}
+
+// Store ideas safely and show detail
+function showIdeaDetail(jsonStr) {
+  try {
+    const idea = JSON.parse(jsonStr);
+    const fields = [
+      ['İsim', idea.name || idea.title],
+      ['Problem', idea.problem],
+      ['Çözüm', idea.solution],
+      ['Hedef Kitle', idea.audience],
+      ['Gelir Modeli', idea.revenue],
+      ['Teknik', idea.tech],
+      ['Zorluk', idea.difficulty],
+      ['Benzer', idea.similar],
+    ];
+    let body = '';
+    for (const [label, val] of fields) {
+      if (val) {
+        body += `<div class="idea-detail-row">
+          <div class="idea-detail-label">${label}</div>
+          <div class="idea-detail-value">${escapeHtml(val)}</div>
+        </div>`;
+      }
+    }
+    openModal(idea.name || 'Fikir Detayı', body || '<p>Detay bulunamadı.</p>');
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ---- CRON ----
+async function loadCron() {
+  loaded.cron = true;
+  try {
+    const jobs = await api('/api/cron');
+    if (!jobs || !jobs.length) {
+      document.getElementById('page-cron').innerHTML = '<div class="empty">Cron job bulunamadı.</div>';
+      return;
+    }
+
+    let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-size:18px">Zamanlanmış Görevler</h2>
+      <span class="ideas-count">${jobs.length} aktif job</span>
+    </div>`;
+    html += '<div class="cron-list">';
+
+    for (let i = 0; i < jobs.length; i++) {
+      const j = jobs[i];
+      html += `<div class="cron-card" id="cron-card-${i}">`;
+
+      // Header (clickable to expand)
+      html += `<div class="cron-header" onclick="toggleCron(${i})">
+        <span class="cron-icon">${escapeHtml(j.icon)}</span>
+        <div class="cron-info">
+          <div class="cron-name">${escapeHtml(j.name)}</div>
+          <div class="cron-desc">${escapeHtml(j.description)}</div>
+        </div>
+        <div class="cron-schedule">
+          <span class="cron-time">${escapeHtml(j.schedule_time)}</span>
+          <span class="cron-freq">${escapeHtml(j.schedule_freq)}</span>
+          <span class="cron-raw">${escapeHtml(j.schedule_raw)}</span>
+        </div>
+      </div>`;
+
+      // Details (hidden by default)
+      html += `<div class="cron-details" id="cron-details-${i}">`;
+
+      // Meta grid
+      html += '<div class="cron-meta-grid">';
+      html += `<div class="cron-meta-item"><div class="cron-meta-label">Script</div><div class="cron-meta-value">${escapeHtml(j.script)}</div></div>`;
+      if (j.last_run) {
+        html += `<div class="cron-meta-item"><div class="cron-meta-label">Son Çalışma</div><div class="cron-meta-value">${escapeHtml(j.last_run)}</div></div>`;
+      }
+      if (j.run_count !== undefined) {
+        html += `<div class="cron-meta-item"><div class="cron-meta-label">Toplam Çalışma</div><div class="cron-meta-value">${j.run_count} kez</div></div>`;
+      }
+      if (j.log_file) {
+        html += `<div class="cron-meta-item"><div class="cron-meta-label">Log Dosyası</div><div class="cron-meta-value" style="font-size:11px;word-break:break-all">${escapeHtml(j.log_file)}</div></div>`;
+      }
+      html += '</div>';
+
+      // Command
+      html += `<div class="cron-log-section">
+        <div class="cron-log-header"><span class="cron-log-title">Komut</span></div>
+        <div class="cron-log-pre">${escapeHtml(j.command)}</div>
+      </div>`;
+
+      // State JSON
+      if (j.state) {
+        html += `<div class="cron-log-section">
+          <div class="cron-log-header"><span class="cron-log-title">Durum (State)</span></div>
+          <div class="cron-state-json">${escapeHtml(JSON.stringify(j.state, null, 2))}</div>
+        </div>`;
+      }
+
+      // Log tail
+      if (j.log_tail) {
+        html += `<div class="cron-log-section">
+          <div class="cron-log-header">
+            <span class="cron-log-title">Son Log Çıktısı</span>
+            ${j.log_file ? `<button class="cron-btn" onclick="viewFullLog('${escapeHtml(j.log_file)}', '${escapeHtml(j.name)}')">Tam Log</button>` : ''}
+          </div>
+          <div class="cron-log-pre">${escapeHtml(j.log_tail)}</div>
+        </div>`;
+      }
+
+      // Actions
+      html += `<div class="cron-actions">
+        <button class="cron-btn primary" id="run-btn-${i}" onclick="runCronJob('${escapeHtml(j.script)}', ${i})">▶ Şimdi Çalıştır</button>
+        ${j.log_file ? `<button class="cron-btn" onclick="refreshLog(${i}, '${escapeHtml(j.log_file)}')">↻ Logu Yenile</button>` : ''}
+      </div>`;
+
+      html += '</div>'; // cron-details
+      html += '</div>'; // cron-card
+    }
+
+    html += '</div>';
+    document.getElementById('page-cron').innerHTML = html;
+  } catch (e) {
+    document.getElementById('page-cron').innerHTML = '<div class="empty">Cron bilgisi alınamadı.</div>';
+  }
+}
+
+function toggleCron(idx) {
+  const el = document.getElementById('cron-details-' + idx);
+  if (el) el.classList.toggle('open');
+}
+
+async function runCronJob(script, idx) {
+  const btn = document.getElementById('run-btn-' + idx);
+  if (!btn) return;
+  btn.className = 'cron-btn running';
+  btn.textContent = '⏳ Çalışıyor...';
+  try {
+    const r = await fetch('/api/cron/run', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ script })
+    });
+    const data = await r.json();
+    if (data.status === 'started') {
+      btn.textContent = '✓ Başlatıldı (PID: ' + data.pid + ')';
+      setTimeout(() => {
+        btn.className = 'cron-btn primary';
+        btn.textContent = '▶ Şimdi Çalıştır';
+      }, 5000);
+    } else {
+      btn.className = 'cron-btn';
+      btn.textContent = '✗ Hata: ' + (data.error || 'bilinmeyen');
+      setTimeout(() => {
+        btn.className = 'cron-btn primary';
+        btn.textContent = '▶ Şimdi Çalıştır';
+      }, 3000);
+    }
+  } catch(e) {
+    btn.className = 'cron-btn';
+    btn.textContent = '✗ Bağlantı hatası';
+    setTimeout(() => {
+      btn.className = 'cron-btn primary';
+      btn.textContent = '▶ Şimdi Çalıştır';
+    }, 3000);
+  }
+}
+
+async function viewFullLog(logPath, jobName) {
+  try {
+    const data = await api('/api/cron/log?path=' + encodeURIComponent(logPath) + '&lines=200');
+    openModal(jobName + ' - Tam Log', `<pre>${escapeHtml(data.content || 'Log boş.')}</pre>`);
+  } catch(e) {
+    openModal(jobName + ' - Log', '<p>Log dosyası okunamadı.</p>');
+  }
+}
+
+async function refreshLog(idx, logPath) {
+  try {
+    const data = await api('/api/cron/log?path=' + encodeURIComponent(logPath) + '&lines=20');
+    const details = document.getElementById('cron-details-' + idx);
+    if (details) {
+      const pres = details.querySelectorAll('.cron-log-pre');
+      const lastPre = pres[pres.length - 1];
+      if (lastPre && pres.length > 1) {
+        lastPre.textContent = data.content || 'Log boş.';
+      }
+    }
+  } catch(e) {}
+}
+
+// ---- SYSTEM ----
+async function loadStatus() {
+  loaded.system = true;
+  try {
+    const s = await api('/api/status');
+    let html = '';
+
+    // Services
+    html += '<div class="sys-section"><div class="sys-section-title">Servisler</div><div class="sys-grid">';
+    html += `<div class="sys-card"><div class="sys-label">Browser Agent</div><div class="sys-value ${s.browser_agent === 'online' ? 'online' : 'offline'}">${s.browser_agent === 'online' ? '● Online' : '○ Offline'}</div></div>`;
+    html += `<div class="sys-card"><div class="sys-label">PC Control</div><div class="sys-value ${s.pc === 'online' ? 'online' : 'offline'}">${s.pc === 'online' ? '● Online' : '○ Offline'}</div></div>`;
+    html += '</div></div>';
+
+    // Docker
+    if (s.docker && s.docker.length) {
+      html += '<div class="sys-section"><div class="sys-section-title">Docker Containers</div>';
+      for (const c of s.docker) {
+        html += `<div class="docker-item">
+          <span class="docker-name">📦 ${escapeHtml(c.name)}</span>
+          <span class="docker-status">${escapeHtml(c.status)}</span>
+          <span class="docker-ports">${escapeHtml(c.ports)}</span>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    // System info
+    if (s.memory && s.memory !== 'N/A') {
+      html += `<div class="sys-section"><div class="sys-section-title">Memory</div><div class="sys-pre">${escapeHtml(s.memory)}</div></div>`;
+    }
+    if (s.disk && s.disk !== 'N/A') {
+      html += `<div class="sys-section"><div class="sys-section-title">Disk</div><div class="sys-pre">${escapeHtml(s.disk)}</div></div>`;
+    }
+    if (s.uptime && s.uptime !== 'N/A') {
+      html += `<div class="sys-section"><div class="sys-section-title">Uptime</div><div class="sys-pre">${escapeHtml(s.uptime)}</div></div>`;
+    }
+    if (s.cron && s.cron !== 'N/A') {
+      html += `<div class="sys-section"><div class="sys-section-title">Cron Jobs</div><div class="sys-pre">${escapeHtml(s.cron)}</div></div>`;
+    }
+
+    document.getElementById('page-system').innerHTML = html;
+  } catch (e) {
+    document.getElementById('page-system').innerHTML = '<div class="empty">Sistem bilgisi alınamadı.</div>';
+  }
+}
+
+
+
+
+// ─── TAGS SİSTEMİ ───────────────────────────────
+
+const PREDEFINED_TAGS = ['kodlama', 'yazı', 'tasarım', 'analiz', 'otomasyon', 'araştırma', 'verimlilik', 'iş', 'ses', 'görüntü'];
+let activeTagFilter = 'all';
+
+function renderTagChips(name, tags, container) {
+  const id = 'tags-' + encodeURIComponent(name);
+  let html = `<div id="${id}" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:6px;">`;
+  for (const t of (tags || [])) {
+    html += `<span class="tag-chip">${escapeHtml(t)}<span class="tag-x" onclick="removeTag(${JSON.stringify(name)},${JSON.stringify(t)})">&times;</span></span>`;
+  }
+  html += `<button class="tag-add-btn" onclick="showTagInput(${JSON.stringify(name)})">+ etiket</button>`;
+  html += '</div>';
+  return html;
+}
+
+async function removeTag(toolName, tag) {
+  const r = await fetch('/api/tools/' + encodeURIComponent(toolName), { headers });
+  const t = await r.json();
+  const newTags = (t.tags || []).filter(x => x !== tag);
+  await fetch('/api/tools/' + encodeURIComponent(toolName), {
+    method: 'PATCH', headers: {...headers, 'Content-Type': 'application/json'},
+    body: JSON.stringify({ tags: newTags })
+  });
+  await loadTools();
+}
+
+function showTagInput(toolName) {
+  const id = 'tags-' + encodeURIComponent(toolName);
+  const container = document.getElementById(id);
+  if (!container) return;
+  // Zaten input var mı?
+  if (container.querySelector('.tag-input-inline')) return;
+  const addBtn = container.querySelector('.tag-add-btn');
+  const inp = document.createElement('input');
+  inp.className = 'tag-input-inline';
+  inp.placeholder = 'etiket...';
+  inp.setAttribute('list', 'predefined-tags');
+  container.insertBefore(inp, addBtn);
+  inp.focus();
+  const commit = async () => {
+    const val = inp.value.trim().toLowerCase();
+    if (val) {
+      const r = await fetch('/api/tools/' + encodeURIComponent(toolName), { headers });
+      const t = await r.json();
+      const tags = t.tags || [];
+      if (!tags.includes(val)) {
+        await fetch('/api/tools/' + encodeURIComponent(toolName), {
+          method: 'PATCH', headers: {...headers, 'Content-Type': 'application/json'},
+          body: JSON.stringify({ tags: [...tags, val] })
+        });
+        await loadTools();
+      } else { inp.remove(); }
+    } else { inp.remove(); }
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') inp.remove(); });
+  inp.addEventListener('blur', () => setTimeout(commit, 150));
+}
+
+// ─── TOOLS (yeni render) ────────────────────────
+
+async function loadTools() {
+  clearTimeout(toolsRefreshTimer);
+  const page = document.getElementById('page-tools');
+  if (!page) return;
+  try {
+    const tools = await api('/api/tools');
+    renderTools(tools);
+    if (tools.some(t => t.evaluating)) {
+      toolsRefreshTimer = setTimeout(loadTools, 10000);
+    }
+  } catch(e) {
+    page.innerHTML = '<div class="tools-empty">Tools yüklenemedi.</div>';
+  }
+}
+
+function renderTools(tools) {
+  const page = document.getElementById('page-tools');
+
+  // Tüm etiketleri topla
+  const allTags = new Set();
+  tools.forEach(t => (t.tags || []).forEach(tag => allTags.add(tag)));
+
+  // Filtre uygula
+  const filtered = activeTagFilter === 'all' ? tools : tools.filter(t => (t.tags || []).includes(activeTagFilter));
+
+  let html = '';
+
+  // Üst bar: ekle formu
+  html += `<div class="tools-header">
+    <div><span class="tools-title">AI Tool Takip Listesi</span> <span class="tools-count">${tools.length} tool</span></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="add-tool-input" id="tool-input" placeholder="Tool adı (örn: Cursor AI)" />
+      <input class="add-tool-input" id="tool-tags-input" placeholder="etiketler (virgülle)" style="width:160px;" />
+      <button class="btn-primary" onclick="addTool()">+ Ekle</button>
+      <button class="btn-sm" onclick="loadTools()">↻</button>
+    </div>
+  </div>`;
+
+  // Etiket filtre bar
+  if (allTags.size > 0) {
+    html += '<div class="tag-filter-bar">';
+    html += `<span style="font-size:11px;color:var(--text-secondary);">Filtre:</span>`;
+    html += `<span class="tag-filter-chip all-chip ${activeTagFilter==='all'?'active':''}" onclick="setTagFilter('all')">Tümü</span>`;
+    for (const tag of [...allTags].sort()) {
+      const cnt = tools.filter(t => (t.tags||[]).includes(tag)).length;
+      html += `<span class="tag-filter-chip ${activeTagFilter===tag?'active':''}" onclick="setTagFilter(${JSON.stringify(tag)})">${escapeHtml(tag)} (${cnt})</span>`;
+    }
+    html += '</div>';
+  }
+
+  // Etiket datalist (öneriler)
+  html += '<datalist id="predefined-tags">';
+  PREDEFINED_TAGS.forEach(t => html += `<option value="${t}">`);
+  html += '</datalist>';
+
+  if (filtered.length === 0) {
+    html += '<div class="tools-empty">Bu etikette kayıtlı tool yok.</div>';
+  } else {
+    for (const t of filtered) {
+      html += `<div class="tool-card" id="tc-${encodeURIComponent(t.name)}">`;
+      html += `<div class="tool-card-head">
+        <span class="tool-name">🛠️ ${escapeHtml(t.name)}</span>
+        ${decisionBadge(t.decision, t.evaluating)}
+        <div class="tool-actions">
+          <button class="btn-sm" onclick="evaluateTool(${JSON.stringify(t.name)})" ${t.evaluating?'disabled':''}>
+            ${t.evaluating ? '⏳' : '🔍 Değerlendir'}
+          </button>
+          ${t.has_report ? `<button class="btn-sm" onclick="showReport(${JSON.stringify(t.name)})">📄 Rapor</button>` : ''}
+          <button class="btn-sm btn-danger" onclick="deleteTool(${JSON.stringify(t.name)})">🗑</button>
+        </div>
+      </div>`;
+      html += `<div class="tool-meta">Son değerlendirme: ${fmtDate(t.last_eval)}${t.added?' · Eklendi: '+fmtDate(t.added):''}</div>`;
+      html += renderTagChips(t.name, t.tags || []);
+      if (t.report_preview && !t.evaluating) {
+        const preview = t.report_preview.replace(/<[^>]+>/g,' ').trim().slice(0,120);
+        html += `<div class="tool-report-preview">${escapeHtml(preview)}...</div>`;
+      }
+      html += '</div>';
+    }
+  }
+
+  page.innerHTML = html;
+  const inp = document.getElementById('tool-input');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter') addTool(); });
+}
+
+function setTagFilter(tag) {
+  activeTagFilter = tag;
+  loadTools();
+}
+
+async function addTool() {
+  const inp = document.getElementById('tool-input');
+  const tagInp = document.getElementById('tool-tags-input');
+  if (!inp) return;
+  const name = inp.value.trim();
+  if (!name) return;
+  const tags = tagInp ? tagInp.value.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean) : [];
+  try {
+    await fetch('/api/tools', {
+      method: 'POST', headers: {...headers,'Content-Type':'application/json'},
+      body: JSON.stringify({ name, tags })
+    });
+    inp.value = ''; if (tagInp) tagInp.value = '';
+    await loadTools();
+  } catch(e) { alert('Eklenemedi: '+e.message); }
+}
+
+async function deleteTool(name) {
+  if (!confirm(name + ' silinsin mi?')) return;
+  try {
+    await fetch('/api/tools/' + encodeURIComponent(name), { method: 'DELETE', headers });
+    await loadTools();
+  } catch(e) { alert('Silinemedi: '+e.message); }
+}
+
+async function evaluateTool(name) {
+  try {
+    await fetch('/api/tools/' + encodeURIComponent(name) + '/evaluate', { method: 'POST', headers });
+    await loadTools();
+  } catch(e) { alert('Başlatılamadı: '+e.message); }
+}
+
+async function showReport(name) {
+  try {
+    const r = await fetch('/api/tools/' + encodeURIComponent(name), { headers });
+    const t = await r.json();
+    if (!t.report) { openModal(name, '<p>Rapor bulunamadı.</p>'); return; }
+    openModal(name + ' — Rapor', `<div class="report-html">${t.report}</div>`);
+  } catch(e) { alert('Rapor alınamadı: '+e.message); }
+}
+
+// ─── CONTENT STUDIO ─────────────────────────────
+
+const FORMATS = ['thread','liste','egitim','storytelling','karsilastirma','hot-take','spark','ozet'];
+const FORMAT_LABELS = {
+  thread:'🧵 Thread', liste:'📋 Liste', egitim:'📚 Eğitim',
+  storytelling:'📖 Hikaye', karsilastirma:'⚔️ Karşılaştırma',
+  'hot-take':'🔥 Hot Take', spark:'💡 Spark', ozet:'📝 Özet'
+};
+const STYLES = ['grok','profesyonel','samimi','hoca','merakli'];
+const STYLE_LABELS = {
+  grok:'😈 Grok', profesyonel:'💼 Pro', samimi:'😊 Samimi',
+  hoca:'👨‍🏫 Hoca', merakli:'🔍 Meraklı'
+};
+
+let selectedFormat = 'thread';
+let selectedStyle = 'samimi';
+let studioRefreshTimer = null;
+
+async function loadStudio() {
+  clearTimeout(studioRefreshTimer);
+  const page = document.getElementById('page-studio');
+  if (!page) return;
+
+  let history = [];
+  try { history = await api('/api/studio/history'); } catch(e) {}
+
+  renderStudio(history);
+
+  if (history.some(h => h.generating)) {
+    studioRefreshTimer = setTimeout(loadStudio, 8000);
+  }
+}
+
+function renderStudio(history) {
+  const page = document.getElementById('page-studio');
+
+  // Format butonları
+  let fmtBtns = FORMATS.map(f =>
+    `<button class="format-btn ${f===selectedFormat?'selected':''}" onclick="selectFormat('${f}')">${FORMAT_LABELS[f]}</button>`
+  ).join('');
+
+  // Stil butonları
+  let styleBtns = STYLES.map(s =>
+    `<button class="style-btn ${s===selectedStyle?'selected':''}" onclick="selectStyle('${s}')">${STYLE_LABELS[s]}</button>`
+  ).join('');
+
+  // Geçmiş
+  let histHtml = '';
+  if (history.length === 0) {
+    histHtml = '<div class="history-empty">Henüz içerik üretilmedi.<br>Soldan bir konu girerek başla.</div>';
+  } else {
+    for (const h of history) {
+      const genClass = h.generating ? 'hist-generating' : '';
+      const preview = h.preview ? h.preview.replace(/<[^>]*>/g,' ').trim() : '';
+      histHtml += `<div class="hist-item">
+        <div class="hist-head">
+          <span class="hist-topic">${escapeHtml(h.topic)}</span>
+          <span class="hist-badge">${escapeHtml(h.format)}</span>
+          <span class="hist-badge">${escapeHtml(h.style)}</span>
+          ${h.generating ? '<span class="hist-badge hist-generating">⏳ üretiliyor</span>' : ''}
+        </div>
+        <div class="hist-meta">${fmtDate(h.created_at)}${h.sent?' · Telegram'a gönderildi':''}</div>
+        ${preview ? `<div class="hist-preview">${escapeHtml(preview.slice(0,150))}</div>` : ''}
+        <div class="hist-actions">
+          ${!h.generating && h.preview ? `<button class="btn-sm" onclick="viewContent('${h.id}')">👁 Görüntüle</button>` : ''}
+          <button class="btn-sm" onclick="reGenerate('${escapeHtml(h.topic)}','${h.format}','${h.style}')">↺ Tekrar Üret</button>
+        </div>
+      </div>`;
+    }
+  }
+
+  page.innerHTML = `
+    <div class="studio-layout">
+      <div class="studio-panel">
+        <div class="studio-panel-title">✍️ İçerik Üret</div>
+        <div class="studio-label">Konu</div>
+        <input class="studio-input" id="studio-topic" placeholder="ör: ChatGPT'ye karşı Claude AI" />
+        <div class="studio-label">Format</div>
+        <div class="format-grid">${fmtBtns}</div>
+        <div class="studio-label">Stil</div>
+        <div class="style-grid">${styleBtns}</div>
+        <div class="studio-btn-row">
+          <button class="studio-btn studio-btn-main" onclick="studioGenerate(false)">🚀 Üret</button>
+          <button class="studio-btn studio-btn-all" onclick="studioGenerate(true)">📦 Tüm Formatlar</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-secondary);">
+          Seçili: <b>${FORMAT_LABELS[selectedFormat]}</b> / <b>${STYLE_LABELS[selectedStyle]}</b><br>
+          İçerik Telegram'a da gönderilir.
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="studio-panel-title">📋 Geçmiş (son 20)</span>
+          <button class="btn-sm" onclick="loadStudio()">↻ Yenile</button>
+        </div>
+        ${histHtml}
+      </div>
+    </div>`;
+
+  const inp = document.getElementById('studio-topic');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') studioGenerate(false); });
+}
+
+function selectFormat(f) { selectedFormat = f; const p = document.getElementById('page-studio'); if (p) loadStudio(); }
+function selectStyle(s)  { selectedStyle = s;  const p = document.getElementById('page-studio'); if (p) loadStudio(); }
+
+async function studioGenerate(allFormats) {
+  const inp = document.getElementById('studio-topic');
+  const topic = inp ? inp.value.trim() : '';
+  if (!topic) { alert('Konu girin!'); return; }
+  try {
+    const body = { topic, format: selectedFormat, style: selectedStyle, all_formats: allFormats };
+    const r = await fetch('/api/studio/generate', {
+      method: 'POST', headers: {...headers,'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (inp) inp.value = '';
+    await loadStudio();
+  } catch(e) { alert('Üretim başlatılamadı: '+e.message); }
+}
+
+async function viewContent(id) {
+  try {
+    const r = await fetch('/api/studio/history/' + id, { headers });
+    const item = await r.json();
+    const content = item.content || '(içerik yok)';
+    // HTML tag'leri Telegram formatından göster
+    const display = content.replace(/
+/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+    openModal(`${item.topic} — ${item.format}/${item.style}`,
+      `<div style="font-size:13px;line-height:1.7;max-height:70vh;overflow-y:auto;">${display}</div>`);
+  } catch(e) { alert('İçerik alınamadı: '+e.message); }
+}
+
+function reGenerate(topic, format, style) {
+  const inp = document.getElementById('studio-topic');
+  if (inp) inp.value = topic;
+  selectedFormat = FORMATS.includes(format) ? format : 'thread';
+  selectedStyle  = STYLES.includes(style) ? style : 'samimi';
+  studioGenerate(format === 'all');
+}
+
+
+// ---- Init ----
+loadAgents();
+</script>
+</body>
+</html>
