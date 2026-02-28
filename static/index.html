@@ -746,19 +746,19 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     </div>
     <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <nav class="sidebar-nav" id="sidebar-nav">
-      <div class="nav-item active" data-page="agents"><span class="nav-icon">🤖</span> Agents</div>
-      <div class="nav-item" data-page="office"><span class="nav-icon">🏢</span> Office</div>
-      <div class="nav-item" data-page="ideas"><span class="nav-icon">💡</span> Ideas</div>
-      <div class="nav-item" data-page="agent-team"><span class="nav-icon">🧪</span> Agent Team</div>
-      <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span> Cron Jobs</div>
-      <div class="nav-item" data-page="logs"><span class="nav-icon">📋</span> Logs</div>
-      <div class="nav-item" data-page="system"><span class="nav-icon">🖥️</span> System</div>
-      <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> Tools</div>
-      <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> Studio</div>
+      <div class="nav-item active" data-page="agents"><span class="nav-icon">🤖</span> <span data-i18n="nav_agents">Agents</span></div>
+      <div class="nav-item" data-page="office"><span class="nav-icon">🏢</span> <span data-i18n="nav_office">Office</span></div>
+      <div class="nav-item" data-page="ideas"><span class="nav-icon">💡</span> <span data-i18n="nav_ideas">Ideas</span></div>
+      <div class="nav-item" data-page="agent-team"><span class="nav-icon">🧪</span> <span data-i18n="nav_agent_team">Agent Team</span></div>
+      <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span> <span data-i18n="nav_cron">Cron Jobs</span></div>
+      <div class="nav-item" data-page="logs"><span class="nav-icon">📋</span> <span data-i18n="nav_logs">Logs</span></div>
+      <div class="nav-item" data-page="system"><span class="nav-icon">🖥️</span> <span data-i18n="nav_system">System</span></div>
+      <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> <span data-i18n="nav_tools">Tools</span></div>
+      <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> <span data-i18n="nav_studio">Studio</span></div>
       <div class="nav-item" data-page="x-news"><span class="nav-icon">𝕏</span> X News</div>
-      <div class="nav-item" data-page="health"><span class="nav-icon">💊</span> Health</div>
-      <div class="nav-item" data-page="apps"><span class="nav-icon">🚀</span> Apps</div>
-      <div class="nav-item" data-page="apikeys"><span class="nav-icon">🔑</span> APIs</div>
+      <div class="nav-item" data-page="health"><span class="nav-icon">💊</span> <span data-i18n="nav_health">Health</span></div>
+      <div class="nav-item" data-page="apps"><span class="nav-icon">🚀</span> <span data-i18n="nav_apps">Apps</span></div>
+      <div class="nav-item" data-page="apikeys"><span class="nav-icon">🔑</span> <span data-i18n="nav_apis">APIs</span></div>
     </nav>
     <div class="sidebar-footer" id="sidebar-ver">OpenClaw</div>
   </aside>
@@ -770,25 +770,26 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
         <div class="main-header-top">
           <div class="main-title" id="page-title">Mission Control</div>
           <div class="main-header-right">
+            <button class="btn-s" id="lang-btn" onclick="toggleLang()" style="padding:6px 10px;font-size:13px" title="Switch Language">🌐</button>
             <input type="text" class="search-box" id="global-search" placeholder="Search..." onkeydown="if(event.key==='Enter')handleGlobalSearch()">
           </div>
         </div>
         <div class="stats-bar" id="stats-bar"></div>
       </div>
       <div class="main-content">
-        <div class="page active" id="page-agents"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-office"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-ideas"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-agent-team"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-cron"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-logs"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-system"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-tools"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-studio"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-x-news"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-health"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-apps"><div class="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-apikeys"><div class="loading">Yükleniyor...</div></div>
+        <div class="page active" id="page-agents"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-office"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-ideas"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-agent-team"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-cron"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-logs"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-system"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-tools"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-studio"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-x-news"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-health"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-apps"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-apikeys"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
       </div>
     </div>
 
@@ -818,7 +819,126 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 
 <script>
 const KEY='nootle-dashboard-2024-secret', headers={'X-API-Key':KEY};
-const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio','x-news':'X News','apps':'🚀 Apps','health':'💊 Health',apikeys:'🔑 APIs'};
+
+// ══════════════════════════════════════════════════════
+// i18n — Çoklu Dil Desteği
+// ══════════════════════════════════════════════════════
+const I18N = {
+  tr: {
+    // Nav
+    nav_agents:'Agentlar', nav_office:'Ofis', nav_ideas:'Fikirler',
+    nav_agent_team:'Agent Ekibi', nav_cron:'Cron Jobs', nav_logs:'Loglar',
+    nav_system:'Sistem', nav_tools:'Araçlar', nav_studio:'Studio',
+    nav_health:'Sağlık', nav_apps:'Uygulamalar', nav_apis:'API\'ler',
+    // Titles
+    title_agents:'Görev Merkezi', title_office:'Ofis', title_ideas:'Fikirler',
+    title_agent_team:'Agent Ekibi', title_cron:'Cron Jobs', title_logs:'Loglar',
+    title_system:'Sistem', title_tools:'AI Araçları', title_studio:'İçerik Stüdyosu',
+    title_x_news:'X Haberler', title_apps:'🚀 Uygulamalar', title_health:'💊 Sağlık',
+    title_apis:'🔑 API\'ler',
+    // Buttons
+    ok:'Tamam', cancel:'İptal', yes:'Evet', no:'Hayır',
+    save:'Kaydet', delete:'Sil', add:'Ekle', edit:'Düzenle',
+    refresh:'Yenile', run:'Çalıştır', test:'Test Et', close:'Kapat',
+    // Common
+    loading:'Yükleniyor...', search:'Ara...',
+    confirm_title:'Onay', info_title:'Bilgi',
+    no_data:'Veri yok', error:'Hata',
+    // Apps
+    app_new:'Yeni Uygulama', app_type:'Tip', app_deploy:'Deploy Hedefi',
+    app_desc:'Açıklama', app_vps:'VPS\'te çalıştır', app_pc:'PC\'ye gönder',
+    // Tools
+    tools_add:'Araç Ekle', tools_eval:'Değerlendir', tools_history:'Geçmiş',
+    // X News
+    x_run:'Şimdi Çalıştır', x_suggest:'✨ Trend Keşfet',
+    x_accounts:'Takip Edilen Hesaplar', x_hashtags:'Hashtag\'ler', x_keywords:'Anahtar Kelimeler',
+    x_settings:'Ayarlar', x_save_settings:'Ayarları Kaydet',
+    // APIs
+    apis_test_all:'🔍 Hepsini Test Et', apis_add:'+ API Ekle', apis_ping:'🔍 Test',
+    // Health
+    health_update:'Güncelle', health_refresh:'Yenile',
+    // Studio
+    studio_generate:'Üret', studio_history:'Geçmiş',
+  },
+  en: {
+    // Nav
+    nav_agents:'Agents', nav_office:'Office', nav_ideas:'Ideas',
+    nav_agent_team:'Agent Team', nav_cron:'Cron Jobs', nav_logs:'Logs',
+    nav_system:'System', nav_tools:'Tools', nav_studio:'Studio',
+    nav_health:'Health', nav_apps:'Apps', nav_apis:'APIs',
+    // Titles
+    title_agents:'Mission Control', title_office:'Office', title_ideas:'Ideas',
+    title_agent_team:'Agent Team', title_cron:'Cron Jobs', title_logs:'Logs',
+    title_system:'System', title_tools:'AI Tools', title_studio:'Content Studio',
+    title_x_news:'X News', title_apps:'🚀 Apps', title_health:'💊 Health',
+    title_apis:'🔑 APIs',
+    // Buttons
+    ok:'OK', cancel:'Cancel', yes:'Yes', no:'No',
+    save:'Save', delete:'Delete', add:'Add', edit:'Edit',
+    refresh:'Refresh', run:'Run Now', test:'Test', close:'Close',
+    // Common
+    loading:'Loading...', search:'Search...',
+    confirm_title:'Confirm', info_title:'Info',
+    no_data:'No data', error:'Error',
+    // Apps
+    app_new:'New App', app_type:'Type', app_deploy:'Deploy Target',
+    app_desc:'Description', app_vps:'Run on VPS', app_pc:'Send to PC',
+    // Tools
+    tools_add:'Add Tool', tools_eval:'Evaluate', tools_history:'History',
+    // X News
+    x_run:'Run Now', x_suggest:'✨ Discover Trends',
+    x_accounts:'Tracked Accounts', x_hashtags:'Hashtags', x_keywords:'Keywords',
+    x_settings:'Settings', x_save_settings:'Save Settings',
+    // APIs
+    apis_test_all:'🔍 Test All', apis_add:'+ Add API', apis_ping:'🔍 Ping',
+    // Health
+    health_update:'Update', health_refresh:'Refresh',
+    // Studio
+    studio_generate:'Generate', studio_history:'History',
+  }
+};
+
+// Tarayici dilini algila, localStorage'dan override al
+let LANG = localStorage.getItem('oc_lang') ||
+  (navigator.language || navigator.userLanguage || 'en').startsWith('tr') ? 'tr' : 'en';
+
+// Ceviri fonksiyonu
+function t(key){ return (I18N[LANG]||I18N.en)[key] || key; }
+
+function applyI18n(){
+  // data-i18n attribute'lu elementleri guncelle
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    const val=t(key);
+    if(val) el.textContent=val;
+  });
+  // Search placeholder
+  const s=document.getElementById('global-search');
+  if(s) s.placeholder=t('search');
+  // Lang button
+  const lb=document.getElementById('lang-btn');
+  if(lb) lb.title=LANG==='tr'?'Switch to English':'Türkçeye Geç';
+  if(lb) lb.textContent=LANG==='tr'?'🌐 TR':'🌐 EN';
+  // html lang attribute
+  document.documentElement.lang=LANG;
+}
+
+function toggleLang(){
+  LANG = LANG==='tr'?'en':'tr';
+  localStorage.setItem('oc_lang', LANG);
+  applyI18n();
+  // Aktif sayfayi yenile (title guncellenir)
+  const active=document.querySelector('.nav-item.active');
+  if(active){ const pg=active.dataset.page; document.getElementById('page-title').textContent=t('title_'+pg.replace('-','_'))||pg; }
+}
+
+const _TITLES_MAP={
+  agents:'title_agents', office:'title_office', ideas:'title_ideas',
+  'agent-team':'title_agent_team', cron:'title_cron', logs:'title_logs',
+  system:'title_system', tools:'title_tools', studio:'title_studio',
+  'x-news':'title_x_news', apps:'title_apps', health:'title_health', apikeys:'title_apis'
+};
+const TITLES=new Proxy({},{get(_,k){return t(_TITLES_MAP[k])||k;}});
 const TAG_COLORS=['green','orange','blue','purple','pink','red','cyan'];
 let tagColorIdx=0;
 const tagColorMap={};
@@ -835,14 +955,14 @@ function closeModal(){modal.classList.remove('open');}
 
 // Custom dialog system (alert/confirm/prompt yerine)
 function showAlert(msg,title){
-  title=title||'Bilgi';
-  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">Tamam</button></div>`);
+  title=title||(t('info_title')||'Bilgi');
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">${t('ok')}</button></div>`);
 }
 let _confirmCb=null;
 function showConfirm(msg,onYes,title){
-  title=title||'Onay';
+  title=title||(t('confirm_title')||'Onay');
   _confirmCb=onYes;
-  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" onclick="closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}">Evet</button></div>`);
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">${t('cancel')}</button><button class="btn-p" onclick="closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}">${t('yes')}</button></div>`);
 }
 function showPrompt(msg,defaultVal,onSubmit,title){
   title=title||'Giriş';
@@ -5835,7 +5955,7 @@ const STATUS_LABEL={online:'🟢 Online',offline:'🔴 Offline',auth_error:'🟡
 
 async function loadApiKeys(){
   const pg=document.getElementById('page-apikeys');if(!pg)return;
-  pg.innerHTML='<div class="loading">Yükleniyor...</div>';
+  pg.innerHTML='<div class="loading" data-i18n="loading">Yükleniyor...</div>';
   try{
     const apis=await api('/api/apis');
     renderApiKeys(apis);
@@ -6087,6 +6207,7 @@ async function xRun(){
 
 
 // Init
+applyI18n();
 loadAgents();
 api('/api/status').then(s=>{
   document.getElementById('sb-browser').classList.add(s.browser_agent==='online'?'on':'off');
