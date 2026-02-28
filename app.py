@@ -1755,6 +1755,16 @@ def put_x_config():
             cfg["max_tweets_per_query"] = max(10, min(100, int(data["max_tweets_per_query"])))
         except Exception:
             pass
+    if "min_likes" in data:
+        try:
+            cfg["min_likes"] = max(0, min(100, int(data["min_likes"])))
+        except Exception:
+            pass
+    if "hours_back" in data:
+        try:
+            cfg["hours_back"] = max(1, min(168, int(data["hours_back"])))
+        except Exception:
+            pass
     save_x_cfg(cfg)
     return jsonify({"ok": True, "config": cfg})
 

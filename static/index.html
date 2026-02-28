@@ -5036,7 +5036,7 @@ async function renameTool(name){
 // ══════════════════════════════════════════════════════
 // X NEWS
 // ══════════════════════════════════════════════════════
-let xCfg={accounts:[],hashtags:[],keywords:[],max_tweets_per_query:50};
+let xCfg={accounts:[],hashtags:[],keywords:[],max_tweets_per_query:50,min_likes:3,hours_back:24};
 
 async function loadXNews(){
   const pg=document.getElementById('page-x-news');if(!pg)return;
@@ -5050,6 +5050,8 @@ function renderXNews(){
   const tags=(xCfg.hashtags||[]);
   const kws=(xCfg.keywords||[]);
   const maxT=xCfg.max_tweets_per_query||50;
+  const minL=xCfg.min_likes||3;
+  const hoursB=xCfg.hours_back||24;
 
   const chipList=(arr,type)=>arr.map(v=>`<span class="x-chip">${esc(type==='hashtag'?'#'+v:v)}<span class="tag-x" onclick="xRemove('${type}',${esc(JSON.stringify(v))})">&times;</span></span>`).join('');
 
@@ -5095,12 +5097,27 @@ function renderXNews(){
 
       <div class="x-section x-settings">
         <div class="x-sec-title">⚙️ Ayarlar</div>
-        <div class="x-setting-row">
-          <label>Sorgu başına max tweet:</label>
+        <div class="x-setting-row" style="margin-bottom:10px">
+          <label style="min-width:200px">Sorgu başına max tweet:</label>
           <input type="number" class="t-input small" id="xi-max" value="${maxT}" min="10" max="100" />
-          <button class="btn-s" onclick="xSaveMax()">Kaydet</button>
+          <span class="x-sec-hint" style="margin:0">Tweet API limiti (10-100)</span>
         </div>
-        <div class="x-sec-hint" style="margin-top:8px">3 sorgu çalışır: hashtag'ler · hesaplar · anahtar kelimeler</div>
+        <div class="x-setting-row" style="margin-bottom:10px">
+          <label style="min-width:200px">Min beğeni filtresi:</label>
+          <input type="number" class="t-input small" id="xi-minlikes" value="${minL}" min="0" max="100" />
+          <span class="x-sec-hint" style="margin:0">Bu kadar beğeni altındaki tweetler atlanır (0=hepsi)</span>
+        </div>
+        <div class="x-setting-row" style="margin-bottom:10px">
+          <label style="min-width:200px">Kaç saate bak:</label>
+          <input type="number" class="t-input small" id="xi-hours" value="${hoursB}" min="1" max="168" />
+          <span class="x-sec-hint" style="margin:0">Son kaç saatin tweetleri (1-168)</span>
+        </div>
+        <div class="x-setting-row">
+          <button class="btn-p" onclick="xSaveSettings()">💾 Ayarları Kaydet</button>
+        </div>
+        <div class="x-sec-hint" style="margin-top:10px">
+          Sabah 08:00 TR + Akşam 17:00 TR otomatik çalışır · 3 sorgu: hashtag (relevancy) · hesap (recency) · keyword (relevancy)
+        </div>
       </div>
     </div>
   </div>`;
@@ -5139,13 +5156,20 @@ async function xRemove(type,val){
   renderXNews();
 }
 
-async function xSaveMax(){
-  const inp=document.getElementById('xi-max');
-  if(!inp)return;
-  const v=parseInt(inp.value)||50;
-  xCfg.max_tweets_per_query=Math.max(10,Math.min(100,v));
+async function xSaveSettings(){
+  const maxInp=document.getElementById('xi-max');
+  const minInp=document.getElementById('xi-minlikes');
+  const hrsInp=document.getElementById('xi-hours');
+  if(maxInp) xCfg.max_tweets_per_query=Math.max(10,Math.min(100,parseInt(maxInp.value)||50));
+  if(minInp) xCfg.min_likes=Math.max(0,Math.min(100,parseInt(minInp.value)||3));
+  if(hrsInp) xCfg.hours_back=Math.max(1,Math.min(168,parseInt(hrsInp.value)||24));
   await xSave();
-  showAlert('Kaydedildi: sorgu başına max '+xCfg.max_tweets_per_query+' tweet','✅ Kaydedildi');
+  showAlert(
+    'Max tweet: '+xCfg.max_tweets_per_query+
+    '\nMin beğeni: '+xCfg.min_likes+
+    '\nSon '+xCfg.hours_back+' saat',
+    '✅ Ayarlar Kaydedildi'
+  );
 }
 
 async function xRun(){
