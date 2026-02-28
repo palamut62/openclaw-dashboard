@@ -4797,7 +4797,7 @@ function renderTools(tools){
     h+=`<span class="tf-chip${activeTagFilter==='all'?' act':''}" onclick="setTF('all')">Tümü</span>`;
     [...allTags].sort().forEach(tag=>{
       const cnt=tools.filter(t=>(t.tags||[]).includes(tag)).length;
-      h+=`<span class="tf-chip${activeTagFilter===tag?' act':''}" onclick="setTF(${JSON.stringify(tag)})">${esc(tag)} (${cnt})</span>`;
+      h+=`<span class="tf-chip${activeTagFilter===tag?' act':''}" onclick="setTF(${esc(JSON.stringify(tag))})">${esc(tag)} (${cnt})</span>`;
     });
     h+='</div>';
   }
@@ -4811,15 +4811,15 @@ function renderTools(tools){
           <span class="tc-name">🛠️ ${esc(t.name)}</span>
           ${dbadge(t.decision,t.evaluating)}
           <div class="tc-actions">
-            <button class="btn-s" onclick="evalTool(${JSON.stringify(t.name)})" ${t.evaluating?'disabled':''}>${t.evaluating?'⏳':'🔍 Değerlendir'}</button>
-            ${t.has_report?`<button class="btn-s" onclick="showRep(${JSON.stringify(t.name)})">📄 Rapor</button>`:''}
+            <button class="btn-s" onclick="evalTool(${esc(JSON.stringify(t.name))})" ${t.evaluating?'disabled':''}>${t.evaluating?'⏳':'🔍 Değerlendir'}</button>
+            ${t.has_report?`<button class="btn-s" onclick="showRep(${esc(JSON.stringify(t.name))})">📄 Rapor</button>`:''}
             <button class="btn-s" onclick="renameTool(${esc(JSON.stringify(t.name))})">✏️</button>
-            <button class="btn-s btn-del" onclick="delTool(${JSON.stringify(t.name)})">🗑</button>
+            <button class="btn-s btn-del" onclick="delTool(${esc(JSON.stringify(t.name))})">🗑</button>
           </div>
         </div>
         <div class="tc-meta">Son: ${fmtD(t.last_eval)}${t.added?' · Eklendi: '+fmtD(t.added):''}</div>
-        <div class="tc-tags">${(t.tags||[]).map(tag=>`<span class="tag-chip">${esc(tag)}<span class="tag-x" onclick="rmTag(${JSON.stringify(t.name)},${JSON.stringify(tag)})">&times;</span></span>`).join('')}
-          <button class="tag-add" onclick="addTagUI(${JSON.stringify(t.name)},this)" list="ptags">+ etiket</button>
+        <div class="tc-tags">${(t.tags||[]).map(tag=>`<span class="tag-chip">${esc(tag)}<span class="tag-x" onclick="rmTag(${esc(JSON.stringify(t.name))},${esc(JSON.stringify(tag))})">&times;</span></span>`).join('')}
+          <button class="tag-add" onclick="addTagUI(${esc(JSON.stringify(t.name))},this)" list="ptags">+ etiket</button>
         </div>
         ${t.report_preview&&!t.evaluating?`<div class="tc-preview">${esc(t.report_preview.replace(/<[^>]+>/g,' ').trim().slice(0,130))}…</div>`:''}
       </div>`;
