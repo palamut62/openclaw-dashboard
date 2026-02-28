@@ -552,6 +552,29 @@ function addToStore(t,c){const i=store.length;store.push({title:t,content:c});re
 const modal=document.getElementById('modal'),modalTitle=document.getElementById('modal-title'),modalBody=document.getElementById('modal-body');
 function openModal(t,h){modalTitle.textContent=t;modalBody.innerHTML=h;modal.classList.add('open');}
 function closeModal(){modal.classList.remove('open');}
+
+// Custom dialog system (alert/confirm/prompt yerine)
+function showAlert(msg,title){
+  title=title||'Bilgi';
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">Tamam</button></div>`);
+}
+function showConfirm(msg,onYes,title){
+  title=title||'Onay';
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" onclick="closeModal();(${onYes.toString()})()">Evet</button></div>`);
+}
+function showPrompt(msg,defaultVal,onSubmit,title){
+  title=title||'Giriş';
+  const uid='dlg-inp-'+Date.now();
+  openModal(title,`<div style="padding:4px 0 12px;font-size:14px">${esc(msg)}</div><input id="${uid}" class="t-input s-full" value="${esc(defaultVal||'')}" style="width:100%;box-sizing:border-box" /><div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" id="${uid}-ok">Tamam</button></div>`);
+  setTimeout(()=>{
+    const inp=document.getElementById(uid);
+    const btn=document.getElementById(uid+'-ok');
+    if(inp)inp.focus();
+    const submit=()=>{const v=inp?inp.value:'';closeModal();onSubmit(v);};
+    if(btn)btn.onclick=submit;
+    if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')submit();if(e.key==='Escape')closeModal();});
+  },50);
+}
 document.getElementById('modal-close').onclick=closeModal;
 modal.onclick=e=>{if(e.target===modal)closeModal();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
@@ -4526,30 +4549,32 @@ async function viewFullLog(p,n){try{const d=await api('/api/cron/log?path='+enco
 async function editCron(idx){
   const j=(window._cronJobs||[])[idx];
   if(!j)return;
-  const cronHelp='Dakika Saat GünAy AyNo GünHf (örn: 0 8 * * * = Her gün 08:00)';
-  const newSched=prompt(j.name+' için yeni zamanlama:\n'+cronHelp,j.schedule_raw);
-  if(!newSched||newSched===j.schedule_raw)return;
-  if(newSched.trim().split(/\s+/).length!==5){alert('Geçersiz: 5 alan gerekli (dk saat g-ay ay g-hf)');return;}
-  try{
-    const r=await fetch('/api/cron/job',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},
-      body:JSON.stringify({old_schedule:j.schedule_raw,new_schedule:newSched.trim(),command:j.command})});
-    const d=await r.json();
-    if(d.ok){alert('✅ Güncellendi: '+newSched.trim());loaded.cron=false;loadCron();}
-    else alert('Hata: '+(d.error||'bilinmeyen'));
-  }catch(e){alert('İstek başarısız');}
+  const cronHelp='Dakika Saat GünAy AyNo GünHf\nörn: 0 8 * * * = Her gün 08:00';
+  showPrompt(j.name+' için yeni zamanlama:\n'+cronHelp,j.schedule_raw,async(newSched)=>{
+    if(!newSched||newSched===j.schedule_raw)return;
+    if(newSched.trim().split(/\s+/).length!==5){showAlert('Geçersiz: 5 alan gerekli (dk saat g-ay ay g-hf)','Hata');return;}
+    try{
+      const r=await fetch('/api/cron/job',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},
+        body:JSON.stringify({old_schedule:j.schedule_raw,new_schedule:newSched.trim(),command:j.command})});
+      const d=await r.json();
+      if(d.ok){showAlert('Güncellendi: '+newSched.trim(),'✅ Başarılı');loaded.cron=false;loadCron();}
+      else showAlert('Hata: '+(d.error||'bilinmeyen'),'Hata');
+    }catch(e){showAlert('İstek başarısız','Hata');}
+  },'Cron Düzenle');
 }
 
 async function deleteCron(idx){
   const j=(window._cronJobs||[])[idx];
   if(!j)return;
-  if(!confirm(j.name+' cron job\'u kalıcı olarak silmek istiyor musunuz?\nBu işlem geri alınamaz!'))return;
-  try{
-    const r=await fetch('/api/cron/job',{method:'DELETE',headers:{...headers,'Content-Type':'application/json'},
-      body:JSON.stringify({schedule:j.schedule_raw,command:j.command})});
-    const d=await r.json();
-    if(d.ok){loaded.cron=false;loadCron();}
-    else alert('Hata: '+(d.error||'bilinmeyen'));
-  }catch(e){alert('İstek başarısız');}
+  showConfirm(j.name+' cron job kalıcı olarak silinsin mi? Bu işlem geri alınamaz!',async()=>{
+    try{
+      const r=await fetch('/api/cron/job',{method:'DELETE',headers:{...headers,'Content-Type':'application/json'},
+        body:JSON.stringify({schedule:j.schedule_raw,command:j.command})});
+      const d=await r.json();
+      if(d.ok){loaded.cron=false;loadCron();}
+      else showAlert('Hata: '+(d.error||'bilinmeyen'),'Hata');
+    }catch(e){showAlert('İstek başarısız','Hata');}
+  },'Cron Sil');
 }
 
 // ===== LOGS =====
@@ -4844,9 +4869,10 @@ async function addTool(){
 }
 
 async function delTool(name){
-  if(!confirm(name+' silinsin mi?'))return;
-  await fetch('/api/tools/'+encodeURIComponent(name),{method:'DELETE',headers});
-  await loadTools();
+  showConfirm(name+' silinsin mi?',async()=>{
+    await fetch('/api/tools/'+encodeURIComponent(name),{method:'DELETE',headers});
+    await loadTools();
+  },'Tool Sil');
 }
 
 async function evalTool(name){
@@ -4968,7 +4994,7 @@ function pickSty(s){selSty=s;if(document.getElementById('page-studio'))loadStudi
 async function stGen(allFmts){
   const inp=document.getElementById('st-topic');
   const topic=(inp?.value||'').trim();
-  if(!topic){alert('Konu girin!');return;}
+  if(!topic){showAlert('Konu girin!','Uyarı');return;}
   await fetch('/api/studio/generate',{method:'POST',headers:{...headers,'Content-Type':'application/json'},
     body:JSON.stringify({topic,format:selFmt,style:selSty,all_formats:allFmts})});
   if(inp)inp.value='';
@@ -4993,16 +5019,18 @@ function reGen(topic,fmt,sty){
 }
 
 async function delHist(id){
-  if(!confirm('Bu içerik geçmişten silinsin mi?'))return;
-  await fetch('/api/studio/history/'+id,{method:'DELETE',headers});
-  await loadStudio();
+  showConfirm('Bu içerik geçmişten silinsin mi?',async()=>{
+    await fetch('/api/studio/history/'+id,{method:'DELETE',headers});
+    await loadStudio();
+  },'Geçmiş Sil');
 }
 
 async function renameTool(name){
-  const newName=prompt('Yeni ad:',name);
-  if(!newName||newName===name)return;
-  const r=await fetch('/api/tools/'+encodeURIComponent(name),{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({new_name:newName.trim()})});
-  await loadTools();
+  showPrompt('Yeni tool adı:',name,async(newName)=>{
+    if(!newName||newName.trim()===name)return;
+    await fetch('/api/tools/'+encodeURIComponent(name),{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({new_name:newName.trim()})});
+    await loadTools();
+  },'Tool Adını Değiştir');
 }
 
 // ══════════════════════════════════════════════════════
@@ -5117,14 +5145,15 @@ async function xSaveMax(){
   const v=parseInt(inp.value)||50;
   xCfg.max_tweets_per_query=Math.max(10,Math.min(100,v));
   await xSave();
-  alert('Kaydedildi: sorgu başına max '+xCfg.max_tweets_per_query+' tweet');
+  showAlert('Kaydedildi: sorgu başına max '+xCfg.max_tweets_per_query+' tweet','✅ Kaydedildi');
 }
 
 async function xRun(){
-  if(!confirm('X haber toplayıcıyı şimdi çalıştırmak istiyor musunuz?\nBu işlem birkaç dakika sürer ve Telegram\'a rapor gönderir.'))return;
-  const r=await fetch('/api/x/run',{method:'POST',headers});
-  const d=await r.json();
-  alert(d.message||'Başlatıldı');
+  showConfirm('X haber toplayıcıyı şimdi çalıştırmak istiyor musunuz? Bu işlem birkaç dakika sürer ve Telegram\'a rapor gönderir.',async()=>{
+    const r=await fetch('/api/x/run',{method:'POST',headers});
+    const d=await r.json();
+    showAlert(d.message||'Başlatıldı','✅ X Haberler');
+  },'X Haberler');
 }
 
 
