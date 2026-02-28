@@ -843,6 +843,99 @@ def run_cron_job():
         return jsonify({"error": str(e)}), 500
 
 
+# --- CRON: UPDATE SCHEDULE ---
+@app.route("/api/cron/job", methods=["PUT"])
+def update_cron_job():
+    """Bir cron job'un zamanlamasini degistir"""
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    old_schedule = data.get("old_schedule", "").strip()  # "* * * * *"
+    new_schedule = data.get("new_schedule", "").strip()  # "0 9 * * *"
+    command = data.get("command", "").strip()
+
+    if not old_schedule or not new_schedule or not command:
+        return jsonify({"error": "old_schedule, new_schedule, command required"}), 400
+
+    # Validate schedule (5 fields)
+    if len(new_schedule.split()) != 5:
+        return jsonify({"error": "schedule must have 5 fields"}), 400
+
+    try:
+        r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+        lines = r.stdout.splitlines()
+        new_lines = []
+        found = False
+        for line in lines:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                new_lines.append(line)
+                continue
+            parts = stripped.split(None, 5)
+            if len(parts) >= 6:
+                line_schedule = " ".join(parts[:5])
+                line_cmd = parts[5]
+                if line_schedule == old_schedule and command in line_cmd:
+                    new_lines.append(new_schedule + " " + line_cmd)
+                    found = True
+                    continue
+            new_lines.append(line)
+
+        if not found:
+            return jsonify({"error": "job not found"}), 404
+
+        new_crontab = "\n".join(new_lines)
+        if not new_crontab.endswith("\n"):
+            new_crontab += "\n"
+        p = subprocess.run(["crontab", "-"], input=new_crontab, text=True, timeout=5)
+        return jsonify({"ok": True, "new_schedule": new_schedule})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/cron/job", methods=["DELETE"])
+def delete_cron_job():
+    """Bir cron job'u kaldir"""
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    schedule = data.get("schedule", "").strip()
+    command = data.get("command", "").strip()
+
+    if not schedule or not command:
+        return jsonify({"error": "schedule and command required"}), 400
+
+    try:
+        r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=5)
+        lines = r.stdout.splitlines()
+        new_lines = []
+        removed = False
+        for line in lines:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                new_lines.append(line)
+                continue
+            parts = stripped.split(None, 5)
+            if len(parts) >= 6:
+                line_schedule = " ".join(parts[:5])
+                line_cmd = parts[5]
+                if line_schedule == schedule and command in line_cmd:
+                    removed = True
+                    continue  # skip = delete
+            new_lines.append(line)
+
+        if not removed:
+            return jsonify({"error": "job not found"}), 404
+
+        new_crontab = "\n".join(new_lines)
+        if not new_crontab.endswith("\n"):
+            new_crontab += "\n"
+        subprocess.run(["crontab", "-"], input=new_crontab, text=True, timeout=5)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # --- LOGS SYSTEM ---
 LOG_SOURCES = [
     {
@@ -1492,6 +1585,13 @@ def patch_tool(name):
         tool["tags"] = [t.strip() for t in data["tags"] if t.strip()]
     if "notes" in data:
         tool["notes"] = data["notes"]
+    if "new_name" in data:
+        new_name = data["new_name"].strip()
+        if new_name and new_name != name:
+            db["tools"][new_name] = db["tools"].pop(name)
+            db["tools"][new_name]["name"] = new_name
+            save_tools_db(db)
+            return jsonify({"ok": True, "renamed": new_name})
     save_tools_db(db)
     return jsonify({"ok": True})
 
@@ -1596,6 +1696,79 @@ def studio_formats():
     if not check_key():
         return jsonify({"error": "unauthorized"}), 401
     return jsonify({"formats": STUDIO_FORMATS, "styles": STUDIO_STYLES})
+
+
+# --- STUDIO: DELETE ---
+@app.route("/api/studio/history/<item_id>", methods=["DELETE"])
+def delete_studio_item(item_id):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    h = load_studio_history()
+    items = h.get("items", [])
+    new_items = [it for it in items if it.get("id") != item_id]
+    if len(new_items) == len(items):
+        return jsonify({"error": "not found"}), 404
+    h["items"] = new_items
+    STUDIO_HISTORY.write_text(json.dumps(h, ensure_ascii=False, indent=2))
+    return jsonify({"ok": True})
+
+
+# --- X (TWITTER) CONFIG ---
+X_CONFIG_PATH = Path("/root/scripts/x-ai-news/x_config.json")
+
+def load_x_cfg():
+    if not X_CONFIG_PATH.exists():
+        return {
+            "accounts": ["OpenAI","AnthropicAI","deepseek_ai","xai","MistralAI"],
+            "hashtags": ["GPT5","GPT4o","Claude","Gemini","LLaMA4","DeepSeek","Grok"],
+            "keywords": ["AI agent","language model","AI coding","open source AI"],
+            "max_tweets_per_query": 50
+        }
+    try:
+        return json.loads(X_CONFIG_PATH.read_text())
+    except Exception:
+        return {}
+
+def save_x_cfg(cfg):
+    X_CONFIG_PATH.write_text(json.dumps(cfg, ensure_ascii=False, indent=2))
+
+@app.route("/api/x/config")
+def get_x_config():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    return jsonify(load_x_cfg())
+
+@app.route("/api/x/config", methods=["PUT"])
+def put_x_config():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    cfg = load_x_cfg()
+    if "accounts" in data:
+        cfg["accounts"] = [a.strip() for a in data["accounts"] if str(a).strip()]
+    if "hashtags" in data:
+        cfg["hashtags"] = [h.strip().lstrip("#") for h in data["hashtags"] if str(h).strip()]
+    if "keywords" in data:
+        cfg["keywords"] = [k.strip() for k in data["keywords"] if str(k).strip()]
+    if "max_tweets_per_query" in data:
+        try:
+            cfg["max_tweets_per_query"] = max(10, min(100, int(data["max_tweets_per_query"])))
+        except Exception:
+            pass
+    save_x_cfg(cfg)
+    return jsonify({"ok": True, "config": cfg})
+
+@app.route("/api/x/run", methods=["POST"])
+def run_x_news():
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    import subprocess
+    subprocess.Popen(
+        ["python3", "/root/scripts/x-ai-news/x_ai_news.py"],
+        stdout=open("/tmp/x_news.log", "a"),
+        stderr=subprocess.STDOUT,
+    )
+    return jsonify({"ok": True, "message": "X haber toplayici baslatildi"})
 
 
 if __name__ == "__main__":

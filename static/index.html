@@ -481,6 +481,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <div class="nav-item" data-page="system"><span class="nav-icon">🖥️</span> System</div>
       <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> Tools</div>
       <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> Studio</div>
+      <div class="nav-item" data-page="x-news"><span class="nav-icon">𝕏</span> X News</div>
     </nav>
     <div class="sidebar-footer">OpenClaw v2</div>
   </aside>
@@ -507,6 +508,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
         <div class="page" id="page-system"><div class="loading">Yükleniyor...</div></div>
         <div class="page" id="page-tools"><div class="loading">Yükleniyor...</div></div>
         <div class="page" id="page-studio"><div class="loading">Yükleniyor...</div></div>
+        <div class="page" id="page-x-news"><div class="loading">Yükleniyor...</div></div>
       </div>
     </div>
 
@@ -536,7 +538,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 
 <script>
 const KEY='nootle-dashboard-2024-secret', headers={'X-API-Key':KEY};
-const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio'};
+const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio','x-news':'X News'};
 const TAG_COLORS=['green','orange','blue','purple','pink','red','cyan'];
 let tagColorIdx=0;
 const tagColorMap={};
@@ -573,6 +575,7 @@ document.querySelectorAll('.nav-item').forEach(n=>{n.onclick=()=>{
   if(pg==='system'&&!loaded.system)loadStatus();
   if(pg==='tools')loadTools();
   if(pg==='studio')loadStudio();
+  if(pg==='x-news')loadXNews();
 };});
 
 async function api(p){const r=await fetch(p,{headers});if(!r.ok)throw new Error();return r.json();}
@@ -3895,7 +3898,28 @@ async function initThreeJSOffice(){
       #office-controls {position:absolute;top:10px;right:10px;display:flex;gap:4px;z-index:10}
       .cam-btn {background:rgba(15,15,26,.8);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:9px;color:var(--text-dim);cursor:pointer;}
       .cam-btn:hover {color:var(--text);border-color:var(--accent);}
-    </style>
+    
+/* ══ X NEWS ══ */
+.x-wrap{padding:20px;max-width:900px;margin:0 auto;}
+.x-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.x-title{font-size:18px;font-weight:700;color:var(--text);}
+.x-actions{display:flex;gap:8px;}
+.x-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.x-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.x-settings{grid-column:1/-1;}
+.x-sec-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.x-count{background:var(--primary);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;}
+.x-sec-hint{font-size:11px;color:var(--text-secondary);margin-bottom:10px;}
+.x-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;margin-bottom:10px;}
+.x-chip{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px 8px 3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:var(--text);}
+.x-chip .tag-x{cursor:pointer;opacity:.6;font-size:14px;line-height:1;}&.x-chip .tag-x:hover{opacity:1;}
+.x-add-row{display:flex;gap:8px;}
+.x-setting-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.t-input.small{width:70px;text-align:center;}
+
+.detail-btn.danger{background:var(--danger,#e55);color:#fff;}
+.detail-btn.danger:hover{background:#c33;}
+</style>
   `;
 
   try{
@@ -4460,6 +4484,7 @@ async function loadCron(){
     const jobs=await api('/api/cron');
     document.getElementById('stats-bar').innerHTML=`<div class="stat-item"><span class="stat-number accent">${jobs.length}</span><span class="stat-label">Jobs</span></div>`;
     if(!jobs||!jobs.length){document.getElementById('page-cron').innerHTML='<div class="empty">Cron yok.</div>';return;}
+    window._cronJobs=jobs;
     let html='<div class="list-cards">';
     for(let i=0;i<jobs.length;i++){
       const j=jobs[i];
@@ -4484,6 +4509,8 @@ async function loadCron(){
           <div class="detail-actions">
             <button class="detail-btn primary" id="run-btn-${i}" onclick="runCronJob('${esc(j.script)}',${i})">▶ Çalıştır</button>
             ${j.log_file?`<button class="detail-btn" onclick="viewFullLog('${esc(j.log_file)}','${esc(j.name)}')">Tam Log</button>`:''}
+            <button class="detail-btn" onclick="editCron(${i})">✏️ Düzenle</button>
+            <button class="detail-btn danger" onclick="deleteCron(${i})">🗑 Sil</button>
           </div>
         </div>
       </div>`;
@@ -4495,6 +4522,35 @@ async function loadCron(){
 function toggleCron(i){const el=document.getElementById('cron-detail-'+i);if(el)el.classList.toggle('open');}
 async function runCronJob(script,i){const btn=document.getElementById('run-btn-'+i);if(!btn)return;btn.className='detail-btn running';btn.textContent='⏳...';try{const r=await fetch('/api/cron/run',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({script})});const d=await r.json();btn.textContent=d.status==='started'?'✓ PID:'+d.pid:'✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Çalıştır';},4000);}catch(e){btn.textContent='✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Çalıştır';},3000);}}
 async function viewFullLog(p,n){try{const d=await api('/api/cron/log?path='+encodeURIComponent(p)+'&lines=200');openModal(n+' - Log',`<pre>${esc(d.content||'Boş.')}</pre>`);}catch(e){openModal(n,'<p>Okunamadı.</p>');}}
+
+async function editCron(idx){
+  const j=(window._cronJobs||[])[idx];
+  if(!j)return;
+  const cronHelp='Dakika Saat GünAy AyNo GünHf (örn: 0 8 * * * = Her gün 08:00)';
+  const newSched=prompt(j.name+' için yeni zamanlama:\n'+cronHelp,j.schedule_raw);
+  if(!newSched||newSched===j.schedule_raw)return;
+  if(newSched.trim().split(/\s+/).length!==5){alert('Geçersiz: 5 alan gerekli (dk saat g-ay ay g-hf)');return;}
+  try{
+    const r=await fetch('/api/cron/job',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},
+      body:JSON.stringify({old_schedule:j.schedule_raw,new_schedule:newSched.trim(),command:j.command})});
+    const d=await r.json();
+    if(d.ok){alert('✅ Güncellendi: '+newSched.trim());loaded.cron=false;loadCron();}
+    else alert('Hata: '+(d.error||'bilinmeyen'));
+  }catch(e){alert('İstek başarısız');}
+}
+
+async function deleteCron(idx){
+  const j=(window._cronJobs||[])[idx];
+  if(!j)return;
+  if(!confirm(j.name+' cron job'u kalıcı olarak silmek istiyor musunuz?\nBu işlem geri alınamaz!'))return;
+  try{
+    const r=await fetch('/api/cron/job',{method:'DELETE',headers:{...headers,'Content-Type':'application/json'},
+      body:JSON.stringify({schedule:j.schedule_raw,command:j.command})});
+    const d=await r.json();
+    if(d.ok){loaded.cron=false;loadCron();}
+    else alert('Hata: '+(d.error||'bilinmeyen'));
+  }catch(e){alert('İstek başarısız');}
+}
 
 // ===== LOGS =====
 let logSourcesData=[],activeLogFilter='all';
@@ -4757,6 +4813,7 @@ function renderTools(tools){
           <div class="tc-actions">
             <button class="btn-s" onclick="evalTool(${JSON.stringify(t.name)})" ${t.evaluating?'disabled':''}>${t.evaluating?'⏳':'🔍 Değerlendir'}</button>
             ${t.has_report?`<button class="btn-s" onclick="showRep(${JSON.stringify(t.name)})">📄 Rapor</button>`:''}
+            <button class="btn-s" onclick="renameTool(${esc(JSON.stringify(t.name))})">✏️</button>
             <button class="btn-s btn-del" onclick="delTool(${JSON.stringify(t.name)})">🗑</button>
           </div>
         </div>
@@ -4874,6 +4931,7 @@ function renderStudio(hist){
       <div class="hi-actions">
         ${!h.generating&&h.preview?`<button class="btn-s" onclick="viewHist('${h.id}')">👁 Görüntüle</button>`:''}
         <button class="btn-s" onclick="reGen('${esc(h.topic)}','${h.format}','${h.style}')">↺ Tekrar</button>
+        ${!h.generating?`<button class="btn-s btn-del" onclick="delHist('${h.id}')">🗑</button>`:''}
       </div>
     </div>`;
   });
@@ -4932,6 +4990,141 @@ function reGen(topic,fmt,sty){
   selFmt=FMTS.includes(fmt)?fmt:'thread';
   selSty=STYS.includes(sty)?sty:'samimi';
   stGen(fmt==='all');
+}
+
+async function delHist(id){
+  if(!confirm('Bu içerik geçmişten silinsin mi?'))return;
+  await fetch('/api/studio/history/'+id,{method:'DELETE',headers});
+  await loadStudio();
+}
+
+async function renameTool(name){
+  const newName=prompt('Yeni ad:',name);
+  if(!newName||newName===name)return;
+  const r=await fetch('/api/tools/'+encodeURIComponent(name),{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({new_name:newName.trim()})});
+  await loadTools();
+}
+
+// ══════════════════════════════════════════════════════
+// X NEWS
+// ══════════════════════════════════════════════════════
+let xCfg={accounts:[],hashtags:[],keywords:[],max_tweets_per_query:50};
+
+async function loadXNews(){
+  const pg=document.getElementById('page-x-news');if(!pg)return;
+  try{xCfg=await api('/api/x/config');}catch(e){pg.innerHTML='<div class="empty-hint">X config yüklenemedi.</div>';return;}
+  renderXNews();
+}
+
+function renderXNews(){
+  const pg=document.getElementById('page-x-news');if(!pg)return;
+  const accs=(xCfg.accounts||[]);
+  const tags=(xCfg.hashtags||[]);
+  const kws=(xCfg.keywords||[]);
+  const maxT=xCfg.max_tweets_per_query||50;
+
+  const chipList=(arr,type)=>arr.map(v=>`<span class="x-chip">${esc(type==='hashtag'?'#'+v:v)}<span class="tag-x" onclick="xRemove('${type}',${esc(JSON.stringify(v))})">&times;</span></span>`).join('');
+
+  pg.innerHTML=`<div class="x-wrap">
+    <div class="x-header">
+      <span class="x-title">𝕏 Twitter Takip Konfigürasyonu</span>
+      <div class="x-actions">
+        <button class="btn-p" onclick="xRun()">▶ Şimdi Çalıştır</button>
+        <button class="btn-s" onclick="loadXNews()">↻</button>
+      </div>
+    </div>
+    <div class="x-grid">
+
+      <div class="x-section">
+        <div class="x-sec-title">👤 Takip Edilen Hesaplar <span class="x-count">${accs.length}</span></div>
+        <div class="x-sec-hint">Bu hesapların tweetleri çekilir (from:hesap)</div>
+        <div class="x-chips">${chipList(accs,'account')}</div>
+        <div class="x-add-row">
+          <input class="t-input" id="xi-acc" placeholder="hesap adı (@ olmadan)" />
+          <button class="btn-s" onclick="xAdd('account')">+ Ekle</button>
+        </div>
+      </div>
+
+      <div class="x-section">
+        <div class="x-sec-title">🏷️ Hashtag'ler <span class="x-count">${tags.length}</span></div>
+        <div class="x-sec-hint">Bu hashtag'ler aranır (#tag)</div>
+        <div class="x-chips">${chipList(tags,'hashtag')}</div>
+        <div class="x-add-row">
+          <input class="t-input" id="xi-tag" placeholder="hashtag (# olmadan)" />
+          <button class="btn-s" onclick="xAdd('hashtag')">+ Ekle</button>
+        </div>
+      </div>
+
+      <div class="x-section">
+        <div class="x-sec-title">🔍 Anahtar Kelimeler <span class="x-count">${kws.length}</span></div>
+        <div class="x-sec-hint">Bu kelimeler veya ifadeler aranır</div>
+        <div class="x-chips">${chipList(kws,'keyword')}</div>
+        <div class="x-add-row">
+          <input class="t-input" id="xi-kw" placeholder="anahtar kelime veya ifade" />
+          <button class="btn-s" onclick="xAdd('keyword')">+ Ekle</button>
+        </div>
+      </div>
+
+      <div class="x-section x-settings">
+        <div class="x-sec-title">⚙️ Ayarlar</div>
+        <div class="x-setting-row">
+          <label>Sorgu başına max tweet:</label>
+          <input type="number" class="t-input small" id="xi-max" value="${maxT}" min="10" max="100" />
+          <button class="btn-s" onclick="xSaveMax()">Kaydet</button>
+        </div>
+        <div class="x-sec-hint" style="margin-top:8px">3 sorgu çalışır: hashtag'ler · hesaplar · anahtar kelimeler</div>
+      </div>
+    </div>
+  </div>`;
+
+  const ai=document.getElementById('xi-acc');
+  if(ai)ai.addEventListener('keydown',e=>{if(e.key==='Enter')xAdd('account');});
+  const ti=document.getElementById('xi-tag');
+  if(ti)ti.addEventListener('keydown',e=>{if(e.key==='Enter')xAdd('hashtag');});
+  const ki=document.getElementById('xi-kw');
+  if(ki)ki.addEventListener('keydown',e=>{if(e.key==='Enter')xAdd('keyword');});
+}
+
+async function xSave(){
+  await fetch('/api/x/config',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(xCfg)});
+}
+
+async function xAdd(type){
+  const ids={account:'xi-acc',hashtag:'xi-tag',keyword:'xi-kw'};
+  const keys={account:'accounts',hashtag:'hashtags',keyword:'keywords'};
+  const inp=document.getElementById(ids[type]);
+  if(!inp)return;
+  const val=inp.value.trim().replace(/^#/,'').replace(/^@/,'');
+  if(!val)return;
+  const arr=xCfg[keys[type]]||[];
+  if(!arr.includes(val)){arr.push(val);xCfg[keys[type]]=arr;}
+  inp.value='';
+  await xSave();
+  renderXNews();
+}
+
+async function xRemove(type,val){
+  const keys={account:'accounts',hashtag:'hashtags',keyword:'keywords'};
+  const arr=xCfg[keys[type]]||[];
+  xCfg[keys[type]]=arr.filter(v=>v!==val);
+  await xSave();
+  renderXNews();
+}
+
+async function xSaveMax(){
+  const inp=document.getElementById('xi-max');
+  if(!inp)return;
+  const v=parseInt(inp.value)||50;
+  xCfg.max_tweets_per_query=Math.max(10,Math.min(100,v));
+  await xSave();
+  alert('Kaydedildi: sorgu başına max '+xCfg.max_tweets_per_query+' tweet');
+}
+
+async function xRun(){
+  if(!confirm('X haber toplayıcıyı şimdi çalıştırmak istiyor musunuz?\nBu işlem birkaç dakika sürer ve Telegram\'a rapor gönderir.'))return;
+  const r=await fetch('/api/x/run',{method:'POST',headers});
+  const d=await r.json();
+  alert(d.message||'Başlatıldı');
 }
 
 
