@@ -30,10 +30,10 @@
 }
 * { margin: 0; padding: 0; box-sizing: border-box; scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; }
-body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; height: 100dvh; overflow: hidden; }
 
 /* ===== LAYOUT ===== */
-.app { display: flex; height: 100vh; }
+.app { display: flex; height: 100vh; height: 100dvh; }
 
 /* ===== SIDEBAR ===== */
 .sidebar {
@@ -83,7 +83,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
   flex-shrink: 0;
 }
 .main-header-top {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px;
 }
 .main-title { font-size: 24px; font-weight: 700; }
 .main-header-right { display: flex; align-items: center; gap: 12px; }
@@ -497,6 +497,21 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .h-red{background:#ef4444;box-shadow:0 0 6px #ef444488;}
 .h-yellow{background:#f59e0b;box-shadow:0 0 6px #f59e0b88;}
 .h-gray{background:#6b7280;}
+
+.backup-section{margin-top:24px;}
+.backup-section h3{font-size:13px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.backup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.backup-list{display:flex;flex-direction:column;gap:8px;}
+.backup-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.backup-item-info{display:flex;flex-direction:column;gap:2px;}
+.backup-item-name{font-size:13px;font-weight:600;font-family:monospace;}
+.backup-item-meta{font-size:11px;opacity:.5;}
+.backup-item-actions{display:flex;gap:6px;}
+.btn-danger{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;}
+.btn-danger:hover{background:rgba(239,68,68,.3);}
+.btn-restore{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;}
+.btn-restore:hover{background:rgba(34,197,94,.3);}
+.backup-empty{font-size:13px;opacity:.4;padding:12px 0;}
 .agent-health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px;}
 .agent-hcard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;}
 .agent-hcard .ah-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
@@ -569,12 +584,17 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 /* Hamburger button — sadece mobilde görünür */
 .mob-menu-btn {
   display: none;
-  position: fixed; top: 12px; right: 14px; z-index: 1100;
-  background: var(--accent); color: #fff; border: none;
-  border-radius: 8px; width: 38px; height: 38px;
-  font-size: 18px; cursor: pointer; line-height: 1;
-  box-shadow: 0 2px 8px #0006;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .15s;
 }
+.mob-menu-btn:hover { background: var(--surface2); }
 
 /* Overlay — sidebar açıkken arka planı karartır */
 .mob-overlay {
@@ -587,27 +607,31 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 @media (max-width: 768px) {
 
   /* Hamburger göster */
-  .mob-menu-btn { display: flex; align-items: center; justify-content: center; }
+  .mob-menu-btn { display: flex !important; }
 
   /* Sidebar: sol taraftan slide-in drawer */
   .sidebar {
     position: fixed; inset: 0 auto 0 0; z-index: 1000;
-    width: 220px; transform: translateX(-100%);
-    transition: transform .25s ease; box-shadow: 4px 0 20px #0008;
+    width: 230px; transform: translateX(-100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 4px 0 24px #0009;
   }
   .sidebar.open { transform: translateX(0); }
 
-  /* .app layout — sidebar çekilince full width */
-  .app { flex-direction: column; }
-  .app > div[style] { flex: 1 !important; }
+  /* Sidebar brand ve footer her zaman görünsün */
+  .sidebar-brand { padding: 16px 14px 12px; }
+  .sidebar-footer { display: block; }
+
+  /* .app layout — sidebar overlay, main full width */
+  .app { flex-direction: row; }
 
   /* Main header */
-  .main-header { padding: 14px 16px 0; }
-  .main-title { font-size: 18px; }
-  .main-header-top { margin-bottom: 12px; }
+  .main-header { padding: 12px 14px 0; }
+  .main-title { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .main-header-top { margin-bottom: 10px; }
 
-  /* Search box daralt */
-  .search-box { width: 140px; font-size: 12px; }
+  /* Search box gizle — mobilde yer yok */
+  .search-box { display: none; }
 
   /* Page content padding */
   .page-wrap { padding: 16px !important; }
@@ -621,6 +645,10 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 
   /* Apps grid */
   .apps-grid { grid-template-columns: 1fr !important; }
+
+  /* X Post generator grid */
+  .xp-grid { grid-template-columns: 1fr !important; }
+  .xp-header { flex-direction: column; align-items: stretch; gap: 10px; }
 
   /* Idea cards tek kolon */
   .ideas-grid { columns: 1 !important; }
@@ -733,9 +761,51 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .api-checked{font-size:10px;color:var(--text-secondary);}
 .api-key-display{font-family:monospace;font-size:10px;color:var(--text-secondary);background:var(--bg);padding:2px 6px;border-radius:4px;}
 
+
+/* ── X Post Generator ── */
+.x-post-section{margin-top:28px;border-top:1px solid var(--border);padding-top:24px;}
+.xp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.xp-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.xp-subtitle{font-size:12px;color:var(--text-dim);}
+.xp-loading{display:flex;align-items:center;gap:12px;padding:24px;color:var(--text-dim);font-size:13px;}
+.xp-error{padding:16px;background:rgba(239,68,68,.1);color:#f87171;border-radius:8px;font-size:13px;}
+.xp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:12px;}
+.xp-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;}
+.xp-card:hover{border-color:var(--accent);}
+.xp-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.xp-badge{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--accent-bg);color:var(--accent);font-weight:600;}
+.xp-angle{background:rgba(236,72,153,.15);color:#ec4899;}
+.xp-text{font-size:13px;line-height:1.7;color:var(--text);min-height:80px;outline:none;border:1px solid transparent;border-radius:6px;padding:6px;transition:border .2s;word-break:break-word;white-space:pre-wrap;cursor:text;}
+.xp-text:focus{border-color:var(--accent);background:var(--surface);}
+.xp-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+.btn-xshare{background:rgba(0,0,0,.4)!important;color:#e7e9ea!important;border-color:#333!important;font-weight:700!important;text-decoration:none!important;display:inline-flex;align-items:center;}
+.btn-xshare:hover{background:rgba(29,155,240,.2)!important;border-color:#1d9bf0!important;color:#1d9bf0!important;}
+.xp-sources{font-size:11px;color:var(--text-secondary);padding:6px 0;}
+.btn-vercel{background:rgba(0,0,0,.4);color:#e7e9ea;border-color:#333;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-run{background:rgba(34,197,94,.12);color:var(--green);border-color:rgba(34,197,94,.25);font-weight:600;}
+.btn-run:hover{background:rgba(34,197,94,.25);}
+.btn-live{background:rgba(59,130,246,.12);color:var(--blue);border-color:rgba(59,130,246,.25);font-weight:600;}
+.btn-stop{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.25);}
+
 </style>
 </head>
 <body>
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:#0f0f1a;z-index:9999;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">
+  <div style="background:#16162a;border:1px solid #2a2a45;border-radius:16px;padding:40px 36px;width:320px;max-width:90vw;text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">🦅</div>
+    <div style="font-size:20px;font-weight:700;color:#a78bfa;margin-bottom:8px;">Mission Control</div>
+    <div style="font-size:13px;color:#7a7a95;margin-bottom:28px;">API anahtarınızı girin</div>
+    <input id="login-key-input" type="password" placeholder="API Key" autocomplete="current-password"
+      style="width:100%;box-sizing:border-box;background:#1e1e35;border:1px solid #2a2a45;border-radius:8px;
+             padding:12px 14px;font-size:16px;color:#e2e2f0;outline:none;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')doLogin()"
+    />
+    <div id="login-err" style="color:#f87171;font-size:12px;min-height:18px;margin-bottom:10px;"></div>
+    <button onclick="doLogin()"
+      style="width:100%;background:#7c3aed;border:none;border-radius:8px;padding:12px;
+             font-size:14px;font-weight:600;color:#fff;cursor:pointer;">Giriş Yap</button>
+  </div>
+</div>
 <div class="mob-overlay" id="mob-overlay" onclick="closeSidebar()"></div>
 <div class="app">
   <!-- SIDEBAR -->
@@ -744,21 +814,20 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <div class="sidebar-brand-icon"><img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/openclaw.png" alt="OpenClaw"></div>
       <span>OpenClaw</span>
     </div>
-    <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <nav class="sidebar-nav" id="sidebar-nav">
-      <div class="nav-item active" data-page="agents"><span class="nav-icon">🤖</span> <span data-i18n="nav_agents">Agents</span></div>
-      <div class="nav-item" data-page="office"><span class="nav-icon">🏢</span> <span data-i18n="nav_office">Office</span></div>
-      <div class="nav-item" data-page="ideas"><span class="nav-icon">💡</span> <span data-i18n="nav_ideas">Ideas</span></div>
-      <div class="nav-item" data-page="agent-team"><span class="nav-icon">🧪</span> <span data-i18n="nav_agent_team">Agent Team</span></div>
-      <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span> <span data-i18n="nav_cron">Cron Jobs</span></div>
-      <div class="nav-item" data-page="logs"><span class="nav-icon">📋</span> <span data-i18n="nav_logs">Logs</span></div>
-      <div class="nav-item" data-page="system"><span class="nav-icon">🖥️</span> <span data-i18n="nav_system">System</span></div>
-      <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> <span data-i18n="nav_tools">Tools</span></div>
-      <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> <span data-i18n="nav_studio">Studio</span></div>
+      <div class="nav-item active" data-page="agents"><span class="nav-icon">🤖</span> Agents</div>
+      <div class="nav-item" data-page="office"><span class="nav-icon">🏢</span> Office</div>
+      <div class="nav-item" data-page="ideas"><span class="nav-icon">💡</span> Ideas</div>
+      <div class="nav-item" data-page="agent-team"><span class="nav-icon">🧪</span> Agent Team</div>
+      <div class="nav-item" data-page="cron"><span class="nav-icon">⏰</span> Cron Jobs</div>
+      <div class="nav-item" data-page="logs"><span class="nav-icon">📋</span> Logs</div>
+      <div class="nav-item" data-page="system"><span class="nav-icon">🖥️</span> System</div>
+      <div class="nav-item" data-page="tools"><span class="nav-icon">🛠️</span> Tools</div>
+      <div class="nav-item" data-page="studio"><span class="nav-icon">✍️</span> Studio</div>
       <div class="nav-item" data-page="x-news"><span class="nav-icon">𝕏</span> X News</div>
-      <div class="nav-item" data-page="health"><span class="nav-icon">💊</span> <span data-i18n="nav_health">Health</span></div>
-      <div class="nav-item" data-page="apps"><span class="nav-icon">🚀</span> <span data-i18n="nav_apps">Apps</span></div>
-      <div class="nav-item" data-page="apikeys"><span class="nav-icon">🔑</span> <span data-i18n="nav_apis">APIs</span></div>
+      <div class="nav-item" data-page="health"><span class="nav-icon">💊</span> Health</div>
+      <div class="nav-item" data-page="apps"><span class="nav-icon">🚀</span> Apps</div>
+      <div class="nav-item" data-page="apikeys"><span class="nav-icon">🔑</span> APIs</div>
     </nav>
     <div class="sidebar-footer" id="sidebar-ver">OpenClaw</div>
   </aside>
@@ -768,28 +837,34 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     <div class="main">
       <div class="main-header">
         <div class="main-header-top">
+          <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <rect y="3" width="20" height="2" rx="1"/>
+              <rect y="9" width="20" height="2" rx="1"/>
+              <rect y="15" width="20" height="2" rx="1"/>
+            </svg>
+          </button>
           <div class="main-title" id="page-title">Mission Control</div>
           <div class="main-header-right">
-            <button class="btn-s" id="lang-btn" onclick="toggleLang()" style="padding:6px 10px;font-size:13px" title="Switch Language">🌐</button>
             <input type="text" class="search-box" id="global-search" placeholder="Search..." onkeydown="if(event.key==='Enter')handleGlobalSearch()">
           </div>
         </div>
         <div class="stats-bar" id="stats-bar"></div>
       </div>
       <div class="main-content">
-        <div class="page active" id="page-agents"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-office"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-ideas"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-agent-team"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-cron"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-logs"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-system"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-tools"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-studio"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-x-news"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-health"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-apps"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
-        <div class="page" id="page-apikeys"><div class="loading" data-i18n="loading">Yükleniyor...</div></div>
+        <div class="page active" id="page-agents"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-office"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-ideas"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-agent-team"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-cron"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-logs"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-system"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-tools"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-studio"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-x-news"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-health"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-apps"><div class="loading">Loading...</div></div>
+        <div class="page" id="page-apikeys"><div class="loading">Loading...</div></div>
       </div>
     </div>
 
@@ -818,127 +893,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 </div>
 
 <script>
-const KEY='nootle-dashboard-2024-secret', headers={'X-API-Key':KEY};
-
-// ══════════════════════════════════════════════════════
-// i18n — Çoklu Dil Desteği
-// ══════════════════════════════════════════════════════
-const I18N = {
-  tr: {
-    // Nav
-    nav_agents:'Agentlar', nav_office:'Ofis', nav_ideas:'Fikirler',
-    nav_agent_team:'Agent Ekibi', nav_cron:'Cron Jobs', nav_logs:'Loglar',
-    nav_system:'Sistem', nav_tools:'Araçlar', nav_studio:'Studio',
-    nav_health:'Sağlık', nav_apps:'Uygulamalar', nav_apis:'API\'ler',
-    // Titles
-    title_agents:'Görev Merkezi', title_office:'Ofis', title_ideas:'Fikirler',
-    title_agent_team:'Agent Ekibi', title_cron:'Cron Jobs', title_logs:'Loglar',
-    title_system:'Sistem', title_tools:'AI Araçları', title_studio:'İçerik Stüdyosu',
-    title_x_news:'X Haberler', title_apps:'🚀 Uygulamalar', title_health:'💊 Sağlık',
-    title_apis:'🔑 API\'ler',
-    // Buttons
-    ok:'Tamam', cancel:'İptal', yes:'Evet', no:'Hayır',
-    save:'Kaydet', delete:'Sil', add:'Ekle', edit:'Düzenle',
-    refresh:'Yenile', run:'Çalıştır', test:'Test Et', close:'Kapat',
-    // Common
-    loading:'Yükleniyor...', search:'Ara...',
-    confirm_title:'Onay', info_title:'Bilgi',
-    no_data:'Veri yok', error:'Hata',
-    // Apps
-    app_new:'Yeni Uygulama', app_type:'Tip', app_deploy:'Deploy Hedefi',
-    app_desc:'Açıklama', app_vps:'VPS\'te çalıştır', app_pc:'PC\'ye gönder',
-    // Tools
-    tools_add:'Araç Ekle', tools_eval:'Değerlendir', tools_history:'Geçmiş',
-    // X News
-    x_run:'Şimdi Çalıştır', x_suggest:'✨ Trend Keşfet',
-    x_accounts:'Takip Edilen Hesaplar', x_hashtags:'Hashtag\'ler', x_keywords:'Anahtar Kelimeler',
-    x_settings:'Ayarlar', x_save_settings:'Ayarları Kaydet',
-    // APIs
-    apis_test_all:'🔍 Hepsini Test Et', apis_add:'+ API Ekle', apis_ping:'🔍 Test',
-    // Health
-    health_update:'Güncelle', health_refresh:'Yenile',
-    // Studio
-    studio_generate:'Üret', studio_history:'Geçmiş',
-  },
-  en: {
-    // Nav
-    nav_agents:'Agents', nav_office:'Office', nav_ideas:'Ideas',
-    nav_agent_team:'Agent Team', nav_cron:'Cron Jobs', nav_logs:'Logs',
-    nav_system:'System', nav_tools:'Tools', nav_studio:'Studio',
-    nav_health:'Health', nav_apps:'Apps', nav_apis:'APIs',
-    // Titles
-    title_agents:'Mission Control', title_office:'Office', title_ideas:'Ideas',
-    title_agent_team:'Agent Team', title_cron:'Cron Jobs', title_logs:'Logs',
-    title_system:'System', title_tools:'AI Tools', title_studio:'Content Studio',
-    title_x_news:'X News', title_apps:'🚀 Apps', title_health:'💊 Health',
-    title_apis:'🔑 APIs',
-    // Buttons
-    ok:'OK', cancel:'Cancel', yes:'Yes', no:'No',
-    save:'Save', delete:'Delete', add:'Add', edit:'Edit',
-    refresh:'Refresh', run:'Run Now', test:'Test', close:'Close',
-    // Common
-    loading:'Loading...', search:'Search...',
-    confirm_title:'Confirm', info_title:'Info',
-    no_data:'No data', error:'Error',
-    // Apps
-    app_new:'New App', app_type:'Type', app_deploy:'Deploy Target',
-    app_desc:'Description', app_vps:'Run on VPS', app_pc:'Send to PC',
-    // Tools
-    tools_add:'Add Tool', tools_eval:'Evaluate', tools_history:'History',
-    // X News
-    x_run:'Run Now', x_suggest:'✨ Discover Trends',
-    x_accounts:'Tracked Accounts', x_hashtags:'Hashtags', x_keywords:'Keywords',
-    x_settings:'Settings', x_save_settings:'Save Settings',
-    // APIs
-    apis_test_all:'🔍 Test All', apis_add:'+ Add API', apis_ping:'🔍 Ping',
-    // Health
-    health_update:'Update', health_refresh:'Refresh',
-    // Studio
-    studio_generate:'Generate', studio_history:'History',
-  }
-};
-
-// Tarayici dilini algila, localStorage'dan override al
-let LANG = localStorage.getItem('oc_lang') ||
-  (navigator.language || navigator.userLanguage || 'en').startsWith('tr') ? 'tr' : 'en';
-
-// Ceviri fonksiyonu
-function t(key){ return (I18N[LANG]||I18N.en)[key] || key; }
-
-function applyI18n(){
-  // data-i18n attribute'lu elementleri guncelle
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const key=el.getAttribute('data-i18n');
-    const val=t(key);
-    if(val) el.textContent=val;
-  });
-  // Search placeholder
-  const s=document.getElementById('global-search');
-  if(s) s.placeholder=t('search');
-  // Lang button
-  const lb=document.getElementById('lang-btn');
-  if(lb) lb.title=LANG==='tr'?'Switch to English':'Türkçeye Geç';
-  if(lb) lb.textContent=LANG==='tr'?'🌐 TR':'🌐 EN';
-  // html lang attribute
-  document.documentElement.lang=LANG;
-}
-
-function toggleLang(){
-  LANG = LANG==='tr'?'en':'tr';
-  localStorage.setItem('oc_lang', LANG);
-  applyI18n();
-  // Aktif sayfayi yenile (title guncellenir)
-  const active=document.querySelector('.nav-item.active');
-  if(active){ const pg=active.dataset.page; document.getElementById('page-title').textContent=t('title_'+pg.replace('-','_'))||pg; }
-}
-
-const _TITLES_MAP={
-  agents:'title_agents', office:'title_office', ideas:'title_ideas',
-  'agent-team':'title_agent_team', cron:'title_cron', logs:'title_logs',
-  system:'title_system', tools:'title_tools', studio:'title_studio',
-  'x-news':'title_x_news', apps:'title_apps', health:'title_health', apikeys:'title_apis'
-};
-const TITLES=new Proxy({},{get(_,k){return t(_TITLES_MAP[k])||k;}});
+let KEY = sessionStorage.getItem('dash_key') || '';
+let headers = {'X-API-Key': KEY};
+const TITLES={agents:'Mission Control',office:'Office',ideas:'Ideas','agent-team':'Agent Team',cron:'Cron Jobs',logs:'Logs',system:'System',tools:'AI Tools',studio:'Content Studio','x-news':'X News','apps':'🚀 Apps','health':'💊 Health',apikeys:'🔑 APIs'};
 const TAG_COLORS=['green','orange','blue','purple','pink','red','cyan'];
 let tagColorIdx=0;
 const tagColorMap={};
@@ -955,19 +912,19 @@ function closeModal(){modal.classList.remove('open');}
 
 // Custom dialog system (alert/confirm/prompt yerine)
 function showAlert(msg,title){
-  title=title||(t('info_title')||'Bilgi');
-  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">${t('ok')}</button></div>`);
+  title=title||'Info';
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;text-align:right"><button class="btn-p" onclick="closeModal()">OK</button></div>`);
 }
 let _confirmCb=null;
 function showConfirm(msg,onYes,title){
-  title=title||(t('confirm_title')||'Onay');
+  title=title||'Confirm';
   _confirmCb=onYes;
-  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">${t('cancel')}</button><button class="btn-p" onclick="closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}">${t('yes')}</button></div>`);
+  openModal(title,`<div style="padding:8px 0;font-size:14px;line-height:1.6">${esc(msg)}</div><div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">Cancel</button><button class="btn-p" onclick="closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}">Yes</button></div>`);
 }
 function showPrompt(msg,defaultVal,onSubmit,title){
-  title=title||'Giriş';
+  title=title||'Input';
   const uid='dlg-inp-'+Date.now();
-  openModal(title,`<div style="padding:4px 0 12px;font-size:14px">${esc(msg)}</div><input id="${uid}" class="t-input s-full" value="${esc(defaultVal||'')}" style="width:100%;box-sizing:border-box" /><div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">İptal</button><button class="btn-p" id="${uid}-ok">Tamam</button></div>`);
+  openModal(title,`<div style="padding:4px 0 12px;font-size:14px">${esc(msg)}</div><input id="${uid}" class="t-input s-full" value="${esc(defaultVal||'')}" style="width:100%;box-sizing:border-box" /><div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px"><button class="btn-s" onclick="closeModal()">Cancel</button><button class="btn-p" id="${uid}-ok">OK</button></div>`);
   setTimeout(()=>{
     const inp=document.getElementById(uid);
     const btn=document.getElementById(uid+'-ok');
@@ -1047,7 +1004,7 @@ async function loadAgents(){
     document.getElementById('page-agents').innerHTML=html;
   }catch(e){
     document.getElementById('sb-vps').classList.add('off');
-    document.getElementById('page-agents').innerHTML='<div class="empty">VPS bağlantısı kurulamadı.</div>';
+    document.getElementById('page-agents').innerHTML='<div class="empty">VPS connection failed.</div>';
   }
 }
 
@@ -1072,9 +1029,9 @@ function agentCard(a){
 // Agent detail modal
 function showAgentDetail(id){
   const ag=agentMap[id];
-  if(!ag){openModal(id,'<p>Agent bulunamadı.</p>');return;}
+  if(!ag){openModal(id,'<p>Agent not found.</p>');return;}
   const allIdxs=[...ag.fileIdxs,...ag.skillIdxs];
-  if(!allIdxs.length){openModal(ag.emoji+' '+ag.name,'<p>Dosya veya skill yok.</p>');return;}
+  if(!allIdxs.length){openModal(ag.emoji+' '+ag.name,'<p>No files or skills.</p>');return;}
   let body=`<div style="margin-bottom:12px;color:var(--text-dim);font-size:13px">${esc(ag.role)}</div>`;
   if(ag.skillIdxs.length){
     body+='<div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px">Skills</div>';
@@ -4727,7 +4684,7 @@ async function refreshAgentTeam(){
   }catch(e){
     const dot=document.getElementById('sb-agent-team');
     if(dot){dot.classList.remove('on');dot.classList.add('off');}
-    document.getElementById('page-agent-team').innerHTML='<div class="empty">Agent Team servisine ulaşılamadı.</div>';
+    document.getElementById('page-agent-team').innerHTML='<div class="empty">Agent Team service is unavailable.</div>';
   }
 }
 function renderAgentTeam(online){
@@ -4755,10 +4712,10 @@ function renderAgentTeam(online){
       <div class="detail-grid-item"><div class="detail-grid-label">Worker</div><div class="detail-grid-value">${agentTeamConfig.worker_running?'Running':'Stopped'}</div></div>
     </div>
     <div class="detail-grid" style="grid-template-columns:1fr 1fr">
-      <div class="detail-grid-item"><div class="detail-grid-label">Goal</div><input id="at-goal" class="agent-input" placeholder="Örn: dashboard endpoint ekle"></div>
+      <div class="detail-grid-item"><div class="detail-grid-label">Goal</div><input id="at-goal" class="agent-input" placeholder="e.g. add dashboard endpoint"></div>
       <div class="detail-grid-item"><div class="detail-grid-label">Project Path</div><input id="at-project" class="agent-input" value="${esc(agentTeamConfig.default_project_path||'')}"></div>
-      <div class="detail-grid-item"><div class="detail-grid-label">Implementation Command</div><input id="at-impl" class="agent-input" placeholder="örn: bash scripts/implement.sh"></div>
-      <div class="detail-grid-item"><div class="detail-grid-label">Test Command</div><input id="at-test" class="agent-input" placeholder="örn: pytest -q"></div>
+      <div class="detail-grid-item"><div class="detail-grid-label">Implementation Command</div><input id="at-impl" class="agent-input" placeholder="e.g. bash scripts/implement.sh"></div>
+      <div class="detail-grid-item"><div class="detail-grid-label">Test Command</div><input id="at-test" class="agent-input" placeholder="e.g. pytest -q"></div>
       <div class="detail-grid-item" style="grid-column:1/-1"><div class="detail-grid-label">Notify Endpoint (opsiyonel)</div><input id="at-notify" class="agent-input" placeholder="https://..."></div>
     </div>
     <div class="detail-actions">
@@ -4771,7 +4728,7 @@ function renderAgentTeam(online){
 
   html+='<div class="list-cards">';
   if(!agentTeamTasks.length){
-    html+='<div class="empty" style="padding:24px">Henüz task yok.</div>';
+    html+='<div class="empty" style="padding:24px">No tasks yet.</div>';
   }else{
     for(const t of agentTeamTasks){
       const st=t.status||'unknown';
@@ -4821,7 +4778,7 @@ async function createAgentTeamTask(){
     if(!r.ok) throw new Error(d.error||'task create failed');
     refreshAgentTeam();
   }catch(e){
-    openModal('Agent Team',`<p>Task oluşturulamadı: ${esc(e.message||'hata')}</p>`);
+    openModal('Agent Team',`<p>Task could not be created: ${esc(e.message||'error')}</p>`);
   }
 }
 async function agentTeamRetry(taskId){
@@ -4829,7 +4786,7 @@ async function agentTeamRetry(taskId){
     await fetch(`/api/agent-team/tasks/${taskId}/retry`,{method:'POST',headers});
     refreshAgentTeam();
   }catch(e){
-    openModal('Agent Team','<p>Retry başarısız.</p>');
+    openModal('Agent Team','<p>Retry failed.</p>');
   }
 }
 async function agentTeamWorker(action){
@@ -4837,7 +4794,7 @@ async function agentTeamWorker(action){
     await fetch(`/api/agent-team/worker/${action}`,{method:'POST',headers});
     refreshAgentTeam();
   }catch(e){
-    openModal('Agent Team','<p>Worker komutu başarısız.</p>');
+    openModal('Agent Team','<p>Worker command failed.</p>');
   }
 }
 async function agentTeamShowRaw(taskId){
@@ -4845,7 +4802,7 @@ async function agentTeamShowRaw(taskId){
     const d=await api(`/api/agent-team/tasks/${taskId}`);
     openModal(`Agent Team Task #${taskId}`,`<pre>${esc(JSON.stringify(d,null,2))}</pre>`);
   }catch(e){
-    openModal('Agent Team','<p>Task detayı alınamadı.</p>');
+    openModal('Agent Team','<p>Task details could not be loaded.</p>');
   }
 }
 
@@ -4854,21 +4811,21 @@ async function loadIdeas(){
   loaded.ideas=true;
   try{
     const ideas=await api('/api/ideas');
-    if(!ideas||!ideas.length){document.getElementById('page-ideas').innerHTML='<div class="empty">Henüz fikir yok.</div>';return;}
+    if(!ideas||!ideas.length){document.getElementById('page-ideas').innerHTML='<div class="empty">No ideas yet.</div>';return;}
     document.getElementById('stats-bar').innerHTML=`
       <div class="stat-item"><span class="stat-number accent">${ideas.length}</span><span class="stat-label">Total</span></div>`;
     const sorted=ideas.slice().reverse();
     let html='<div class="columns"><div class="column" style="grid-column:1/-1">';
-    html+=`<div class="column-header"><span class="column-dot green"></span><span class="column-title">Fikir Arşivi</span><span class="column-count">${ideas.length}</span></div>`;
+    html+=`<div class="column-header"><span class="column-dot green"></span><span class="column-title">Idea Archive</span><span class="column-count">${ideas.length}</span></div>`;
     let lastDate='';
     for(const idea of sorted){
       if(idea.date!==lastDate){lastDate=idea.date;html+=`<div style="font-size:12px;font-weight:600;color:var(--accent);padding:10px 0 4px">📅 ${idea.date}</div>`;}
       const pc=(idea.period||'').includes('gece')?'purple':'orange';
       html+=`<div class="card" onclick='showIdeaDetail(${JSON.stringify(JSON.stringify(idea))})'>
-        <div class="card-title">${esc(idea.name||idea.title||'Fikir')}</div>
+        <div class="card-title">${esc(idea.name||idea.title||'Idea')}</div>
         <div class="card-desc">${esc(idea.problem||idea.description||'')}</div>
         <div class="card-footer"><div class="card-tags">
-          <span class="tag ${pc}">${(idea.period||'').includes('gece')?'🌙 Gece':'☀️ Gündüz'}</span>
+          <span class="tag ${pc}">${(idea.period||'').includes('gece')?'🌙 Night':'☀️ Day'}</span>
           ${idea.tech?`<span class="tag blue">${esc(idea.tech)}</span>`:''}
           ${idea.difficulty?`<span class="tag orange">${esc(idea.difficulty)}</span>`:''}
         </div><span class="card-time">${idea.time||''}</span></div>
@@ -4876,13 +4833,13 @@ async function loadIdeas(){
     }
     html+='</div></div>';
     document.getElementById('page-ideas').innerHTML=html;
-  }catch(e){document.getElementById('page-ideas').innerHTML='<div class="empty">Yüklenemedi.</div>';}
+  }catch(e){document.getElementById('page-ideas').innerHTML='<div class="empty">Failed to load.</div>';}
 }
 
 function showIdeaDetail(j){
-  try{const idea=JSON.parse(j);const fields=[['İsim',idea.name||idea.title],['Problem',idea.problem],['Çözüm',idea.solution],['Hedef Kitle',idea.audience],['Gelir',idea.revenue],['Teknik',idea.tech],['Zorluk',idea.difficulty],['Benzer',idea.similar]];
+  try{const idea=JSON.parse(j);const fields=[['Name',idea.name||idea.title],['Problem',idea.problem],['Solution',idea.solution],['Target Audience',idea.audience],['Revenue',idea.revenue],['Tech',idea.tech],['Difficulty',idea.difficulty],['Similar',idea.similar]];
   let b='';for(const[l,v]of fields)if(v)b+=`<div class="idea-detail-row"><div class="idea-detail-label">${l}</div><div class="idea-detail-value">${esc(v)}</div></div>`;
-  openModal(idea.name||'Fikir',b||'<p>Detay yok.</p>');}catch(e){}
+  openModal(idea.name||'Idea',b||'<p>No details.</p>');}catch(e){}
 }
 
 // ===== CRON =====
@@ -4891,7 +4848,7 @@ async function loadCron(){
   try{
     const jobs=await api('/api/cron');
     document.getElementById('stats-bar').innerHTML=`<div class="stat-item"><span class="stat-number accent">${jobs.length}</span><span class="stat-label">Jobs</span></div>`;
-    if(!jobs||!jobs.length){document.getElementById('page-cron').innerHTML='<div class="empty">Cron yok.</div>';return;}
+    if(!jobs||!jobs.length){document.getElementById('page-cron').innerHTML='<div class="empty">No cron jobs.</div>';return;}
     window._cronJobs=jobs;
     let html='<div class="list-cards">';
     for(let i=0;i<jobs.length;i++){
@@ -4908,58 +4865,58 @@ async function loadCron(){
         <div class="list-card-detail" id="cron-detail-${i}">
           <div class="detail-grid">
             <div class="detail-grid-item"><div class="detail-grid-label">Script</div><div class="detail-grid-value">${esc(j.script)}</div></div>
-            ${j.last_run?`<div class="detail-grid-item"><div class="detail-grid-label">Son Çalışma</div><div class="detail-grid-value">${esc(j.last_run)}</div></div>`:''}
-            ${j.run_count!==undefined?`<div class="detail-grid-item"><div class="detail-grid-label">Toplam</div><div class="detail-grid-value">${j.run_count} kez</div></div>`:''}
+            ${j.last_run?`<div class="detail-grid-item"><div class="detail-grid-label">Last Run</div><div class="detail-grid-value">${esc(j.last_run)}</div></div>`:''}
+            ${j.run_count!==undefined?`<div class="detail-grid-item"><div class="detail-grid-label">Total</div><div class="detail-grid-value">${j.run_count} runs</div></div>`:''}
           </div>
           <div class="detail-pre">${esc(j.command)}</div>
           ${j.state?`<div class="detail-pre" style="color:var(--accent);margin-top:6px">${esc(JSON.stringify(j.state,null,2))}</div>`:''}
           ${j.log_tail?`<div class="detail-pre" style="margin-top:6px">${esc(j.log_tail)}</div>`:''}
           <div class="detail-actions">
-            <button class="detail-btn primary" id="run-btn-${i}" onclick="runCronJob('${esc(j.script)}',${i})">▶ Çalıştır</button>
-            ${j.log_file?`<button class="detail-btn" onclick="viewFullLog('${esc(j.log_file)}','${esc(j.name)}')">Tam Log</button>`:''}
-            <button class="detail-btn" onclick="editCron(${i})">✏️ Düzenle</button>
-            <button class="detail-btn danger" onclick="deleteCron(${i})">🗑 Sil</button>
+            <button class="detail-btn primary" id="run-btn-${i}" onclick="runCronJob('${esc(j.script)}',${i})">▶ Run</button>
+            ${j.log_file?`<button class="detail-btn" onclick="viewFullLog('${esc(j.log_file)}','${esc(j.name)}')">Full Log</button>`:''}
+            <button class="detail-btn" onclick="editCron(${i})">✏️ Edit</button>
+            <button class="detail-btn danger" onclick="deleteCron(${i})">🗑 Delete</button>
           </div>
         </div>
       </div>`;
     }
     html+='</div>';
     document.getElementById('page-cron').innerHTML=html;
-  }catch(e){document.getElementById('page-cron').innerHTML='<div class="empty">Yüklenemedi.</div>';}
+  }catch(e){document.getElementById('page-cron').innerHTML='<div class="empty">Failed to load.</div>';}
 }
 function toggleCron(i){const el=document.getElementById('cron-detail-'+i);if(el)el.classList.toggle('open');}
-async function runCronJob(script,i){const btn=document.getElementById('run-btn-'+i);if(!btn)return;btn.className='detail-btn running';btn.textContent='⏳...';try{const r=await fetch('/api/cron/run',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({script})});const d=await r.json();btn.textContent=d.status==='started'?'✓ PID:'+d.pid:'✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Çalıştır';},4000);}catch(e){btn.textContent='✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Çalıştır';},3000);}}
-async function viewFullLog(p,n){try{const d=await api('/api/cron/log?path='+encodeURIComponent(p)+'&lines=200');openModal(n+' - Log',`<pre>${esc(d.content||'Boş.')}</pre>`);}catch(e){openModal(n,'<p>Okunamadı.</p>');}}
+async function runCronJob(script,i){const btn=document.getElementById('run-btn-'+i);if(!btn)return;btn.className='detail-btn running';btn.textContent='⏳...';try{const r=await fetch('/api/cron/run',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({script})});const d=await r.json();btn.textContent=d.status==='started'?'✓ PID:'+d.pid:'✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Run';},4000);}catch(e){btn.textContent='✗';setTimeout(()=>{btn.className='detail-btn primary';btn.textContent='▶ Run';},3000);}}
+async function viewFullLog(p,n){try{const d=await api('/api/cron/log?path='+encodeURIComponent(p)+'&lines=200');openModal(n+' - Log',`<pre>${esc(d.content||'Empty.')}</pre>`);}catch(e){openModal(n,'<p>Could not be read.</p>');}}
 
 async function editCron(idx){
   const j=(window._cronJobs||[])[idx];
   if(!j)return;
-  const cronHelp='Dakika Saat GünAy AyNo GünHf\nörn: 0 8 * * * = Her gün 08:00';
-  showPrompt(j.name+' için yeni zamanlama:\n'+cronHelp,j.schedule_raw,async(newSched)=>{
+  const cronHelp='Minute Hour DayOfMonth Month DayOfWeek\ne.g. 0 8 * * * = Every day at 08:00';
+  showPrompt('New schedule for '+j.name+':\n'+cronHelp,j.schedule_raw,async(newSched)=>{
     if(!newSched||newSched===j.schedule_raw)return;
-    if(newSched.trim().split(/\s+/).length!==5){showAlert('Geçersiz: 5 alan gerekli (dk saat g-ay ay g-hf)','Hata');return;}
+    if(newSched.trim().split(/\s+/).length!==5){showAlert('Invalid: 5 fields required (min hour dom month dow)','Error');return;}
     try{
       const r=await fetch('/api/cron/job',{method:'PUT',headers:{...headers,'Content-Type':'application/json'},
         body:JSON.stringify({old_schedule:j.schedule_raw,new_schedule:newSched.trim(),command:j.command})});
       const d=await r.json();
-      if(d.ok){showAlert('Güncellendi: '+newSched.trim(),'✅ Başarılı');loaded.cron=false;loadCron();}
-      else showAlert('Hata: '+(d.error||'bilinmeyen'),'Hata');
-    }catch(e){showAlert('İstek başarısız','Hata');}
-  },'Cron Düzenle');
+      if(d.ok){showAlert('Updated: '+newSched.trim(),'✅ Success');loaded.cron=false;loadCron();}
+      else showAlert('Error: '+(d.error||'unknown'),'Error');
+    }catch(e){showAlert('Request failed','Error');}
+  },'Edit Cron');
 }
 
 async function deleteCron(idx){
   const j=(window._cronJobs||[])[idx];
   if(!j)return;
-  showConfirm(j.name+' cron job kalıcı olarak silinsin mi? Bu işlem geri alınamaz!',async()=>{
+  showConfirm('Permanently delete cron job '+j.name+'? This action cannot be undone.',async()=>{
     try{
       const r=await fetch('/api/cron/job',{method:'DELETE',headers:{...headers,'Content-Type':'application/json'},
         body:JSON.stringify({schedule:j.schedule_raw,command:j.command})});
       const d=await r.json();
       if(d.ok){loaded.cron=false;loadCron();}
-      else showAlert('Hata: '+(d.error||'bilinmeyen'),'Hata');
-    }catch(e){showAlert('İstek başarısız','Hata');}
-  },'Cron Sil');
+      else showAlert('Error: '+(d.error||'unknown'),'Error');
+    }catch(e){showAlert('Request failed','Error');}
+  },'Delete Cron');
 }
 
 // ===== LOGS =====
@@ -4968,15 +4925,15 @@ function formatBytes(b){if(!b)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=
 async function loadLogs(){
   loaded.logs=true;
   try{logSourcesData=await api('/api/logs');document.getElementById('stats-bar').innerHTML=`<div class="stat-item"><span class="stat-number accent">${logSourcesData.length}</span><span class="stat-label">Sources</span></div>`;renderLogs();}
-  catch(e){document.getElementById('page-logs').innerHTML='<div class="empty">Yüklenemedi.</div>';}
+  catch(e){document.getElementById('page-logs').innerHTML='<div class="empty">Failed to load.</div>';}
 }
 function renderLogs(){
   const sources=activeLogFilter==='all'?logSourcesData:logSourcesData.filter(s=>s.category===activeLogFilter);
   const cats=[...new Set(logSourcesData.map(s=>s.category))];
   let html=`<div class="logs-toolbar">
-    <input type="text" class="search-box" style="width:auto;flex:1" id="log-search-input" placeholder="Loglarda ara..." onkeydown="if(event.key==='Enter')searchAllLogs()">
-    <button class="detail-btn primary" onclick="searchAllLogs()">Ara</button>
-    <button class="logs-filter-btn ${activeLogFilter==='all'?'active':''}" onclick="filterLogs('all')">Tümü</button>`;
+    <input type="text" class="search-box" style="width:auto;flex:1" id="log-search-input" placeholder="Search logs..." onkeydown="if(event.key==='Enter')searchAllLogs()">
+    <button class="detail-btn primary" onclick="searchAllLogs()">Search</button>
+    <button class="logs-filter-btn ${activeLogFilter==='all'?'active':''}" onclick="filterLogs('all')">All</button>`;
   for(const c of cats)html+=`<button class="logs-filter-btn ${activeLogFilter===c?'active':''}" onclick="filterLogs('${c}')">${c}</button>`;
   html+='</div><div id="log-search-results"></div><div class="list-cards">';
   for(const s of sources){
@@ -4991,11 +4948,11 @@ function renderLogs(){
         </div>
       </div>
       <div class="list-card-detail" id="log-detail-${s.id}">
-        <div id="log-content-${s.id}">${s.preview?`<div class="detail-pre">${colorize(esc(s.preview))}</div>`:'<div style="color:var(--text-dim);font-size:11px">Boş.</div>'}</div>
+        <div id="log-content-${s.id}">${s.preview?`<div class="detail-pre">${colorize(esc(s.preview))}</div>`:'<div style="color:var(--text-dim);font-size:11px">Empty.</div>'}</div>
         <div class="detail-actions">
-          <button class="detail-btn primary" onclick="viewLogDetail('${s.id}',100)">Son 100</button>
-          <button class="detail-btn" onclick="viewLogDetail('${s.id}',500)">Son 500</button>
-          <button class="detail-btn" onclick="refreshLogSrc('${s.id}')">↻ Yenile</button>
+          <button class="detail-btn primary" onclick="viewLogDetail('${s.id}',100)">Last 100</button>
+          <button class="detail-btn" onclick="viewLogDetail('${s.id}',500)">Last 500</button>
+          <button class="detail-btn" onclick="refreshLogSrc('${s.id}')">↻ Refresh</button>
           ${s.all_files&&s.all_files.length>1?`<select class="search-box" style="width:170px;padding:5px 8px" onchange="viewLogDate('${s.id}',this.value)">${s.all_files.map(f=>`<option value="${esc(f)}">${esc(f.split('/').pop())}</option>`).join('')}</select>`:''}
         </div>
       </div>
@@ -5007,10 +4964,10 @@ function renderLogs(){
 function colorize(t){return t.split('\n').map(l=>{let c='';const w=l.toLowerCase();if(w.includes('error')||w.includes('fail'))c='error';else if(w.includes('warn'))c='WARN';else if(w.includes('info'))c='INFO';return`<div class="log-line ${c}">${l}</div>`;}).join('');}
 function filterLogs(c){activeLogFilter=c;renderLogs();}
 function toggleLog(id){const el=document.getElementById('log-detail-'+id);if(el)el.classList.toggle('open');}
-async function viewLogDetail(id,lines){try{const d=await api(`/api/logs/${id}?lines=${lines}`);let b='';if(d.entries&&d.entries.length){b='<div style="max-height:70vh;overflow-y:auto">';for(const e of d.entries){const t=(e.time||'').replace('T',' ').slice(0,19),lv=e.level||'',m=e.message||e.raw||JSON.stringify(e);let lc='var(--text-dim)';if(lv==='ERROR')lc='var(--red)';else if(lv==='WARN')lc='var(--orange)';b+=`<div style="padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:monospace"><span style="color:var(--text-dim)">${esc(t)}</span> <span style="color:${lc};font-weight:600">${esc(lv)}</span> <span style="color:var(--text)">${esc(typeof m==='string'?m:JSON.stringify(m))}</span></div>`;}b+='</div>';}else if(d.raw)b=`<pre>${colorize(esc(d.raw))}</pre>`;else b='<p>Boş.</p>';openModal(d.name+` (${lines})`,b);}catch(e){openModal('Hata','<p>Yüklenemedi.</p>');}}
-async function viewLogDate(id,fp){const m=fp.match(/(\d{4}-\d{2}-\d{2})/);try{const d=await api(`/api/logs/${id}?lines=200&date=${m?m[1]:''}`);let b='';if(d.entries&&d.entries.length){b='<div style="max-height:70vh;overflow-y:auto">';for(const e of d.entries){const t=(e.time||'').replace('T',' ').slice(0,19),lv=e.level||'',mg=e.message||e.raw||JSON.stringify(e);let lc='var(--text-dim)';if(lv==='ERROR')lc='var(--red)';else if(lv==='WARN')lc='var(--orange)';b+=`<div style="padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:monospace"><span style="color:var(--text-dim)">${esc(t)}</span> <span style="color:${lc};font-weight:600">${esc(lv)}</span> <span style="color:var(--text)">${esc(typeof mg==='string'?mg:JSON.stringify(mg))}</span></div>`;}b+='</div>';}else if(d.raw)b=`<pre>${colorize(esc(d.raw))}</pre>`;openModal(d.name+' - '+fp.split('/').pop(),b||'<p>Boş.</p>');}catch(e){openModal('Hata','<p>Yüklenemedi.</p>');}}
+async function viewLogDetail(id,lines){try{const d=await api(`/api/logs/${id}?lines=${lines}`);let b='';if(d.entries&&d.entries.length){b='<div style="max-height:70vh;overflow-y:auto">';for(const e of d.entries){const t=(e.time||'').replace('T',' ').slice(0,19),lv=e.level||'',m=e.message||e.raw||JSON.stringify(e);let lc='var(--text-dim)';if(lv==='ERROR')lc='var(--red)';else if(lv==='WARN')lc='var(--orange)';b+=`<div style="padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:monospace"><span style="color:var(--text-dim)">${esc(t)}</span> <span style="color:${lc};font-weight:600">${esc(lv)}</span> <span style="color:var(--text)">${esc(typeof m==='string'?m:JSON.stringify(m))}</span></div>`;}b+='</div>';}else if(d.raw)b=`<pre>${colorize(esc(d.raw))}</pre>`;else b='<p>Empty.</p>';openModal(d.name+` (${lines})`,b);}catch(e){openModal('Error','<p>Failed to load.</p>');}}
+async function viewLogDate(id,fp){const m=fp.match(/(\d{4}-\d{2}-\d{2})/);try{const d=await api(`/api/logs/${id}?lines=200&date=${m?m[1]:''}`);let b='';if(d.entries&&d.entries.length){b='<div style="max-height:70vh;overflow-y:auto">';for(const e of d.entries){const t=(e.time||'').replace('T',' ').slice(0,19),lv=e.level||'',mg=e.message||e.raw||JSON.stringify(e);let lc='var(--text-dim)';if(lv==='ERROR')lc='var(--red)';else if(lv==='WARN')lc='var(--orange)';b+=`<div style="padding:3px 0;border-bottom:1px solid var(--border);font-size:11px;font-family:monospace"><span style="color:var(--text-dim)">${esc(t)}</span> <span style="color:${lc};font-weight:600">${esc(lv)}</span> <span style="color:var(--text)">${esc(typeof mg==='string'?mg:JSON.stringify(mg))}</span></div>`;}b+='</div>';}else if(d.raw)b=`<pre>${colorize(esc(d.raw))}</pre>`;openModal(d.name+' - '+fp.split('/').pop(),b||'<p>Empty.</p>');}catch(e){openModal('Error','<p>Failed to load.</p>');}}
 async function refreshLogSrc(id){try{const d=await api(`/api/logs/${id}?lines=20`);const el=document.getElementById('log-content-'+id);if(el&&d.raw)el.innerHTML=`<div class="detail-pre">${colorize(esc(d.raw))}</div>`;}catch(e){}}
-async function searchAllLogs(){const q=(document.getElementById('log-search-input')||{}).value||'';if(!q||q.length<2)return;const rd=document.getElementById('log-search-results');rd.innerHTML='<div class="loading" style="padding:16px">Aranıyor...</div>';try{const d=await api('/api/logs/search?q='+encodeURIComponent(q));if(!d.results||!d.results.length){rd.innerHTML=`<div style="padding:12px;color:var(--text-dim)">"${esc(q)}" bulunamadı.</div>`;return;}let h=`<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${d.total_sources} kaynakta sonuç</div><div class="search-results">`;for(const r of d.results)h+=`<div class="search-result-card"><div class="search-result-header"><span>${r.icon}</span><span style="font-weight:600">${esc(r.source_name)}</span><span class="search-result-count">${r.match_count}</span></div><div class="detail-pre" style="max-height:120px">${hlSearch(esc(r.matches),q)}</div></div>`;h+='</div>';rd.innerHTML=h;}catch(e){rd.innerHTML='<div style="color:var(--red);padding:12px">Hata.</div>';}}
+async function searchAllLogs(){const q=(document.getElementById('log-search-input')||{}).value||'';if(!q||q.length<2)return;const rd=document.getElementById('log-search-results');rd.innerHTML='<div class="loading" style="padding:16px">Searching...</div>';try{const d=await api('/api/logs/search?q='+encodeURIComponent(q));if(!d.results||!d.results.length){rd.innerHTML=`<div style="padding:12px;color:var(--text-dim)">"${esc(q)}" not found.</div>`;return;}let h=`<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">Results across ${d.total_sources} sources</div><div class="search-results">`;for(const r of d.results)h+=`<div class="search-result-card"><div class="search-result-header"><span>${r.icon}</span><span style="font-weight:600">${esc(r.source_name)}</span><span class="search-result-count">${r.match_count}</span></div><div class="detail-pre" style="max-height:120px">${hlSearch(esc(r.matches),q)}</div></div>`;h+='</div>';rd.innerHTML=h;}catch(e){rd.innerHTML='<div style="color:var(--red);padding:12px">Error.</div>';}}
 function hlSearch(t,q){return t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<span class="search-highlight">$1</span>');}
 
 // ===== SYSTEM =====
@@ -5027,7 +4984,7 @@ async function loadStatus(){
       <div class="stat-item"><span class="stat-number ${s.pc==='online'?'green':''}">●</span><span class="stat-label">PC</span></div>
       <div class="stat-item"><span class="stat-number ${s.agent_team==='online'?'green':''}">●</span><span class="stat-label">Agent Team</span></div>`;
     let html='';
-    html+='<div class="sys-section"><div class="sys-section-title">Servisler</div><div class="sys-grid">';
+    html+='<div class="sys-section"><div class="sys-section-title">Services</div><div class="sys-grid">';
     html+=`<div class="sys-card"><div class="sys-label">Browser Agent</div><div class="sys-value ${s.browser_agent==='online'?'online':'offline'}">${s.browser_agent==='online'?'● Online':'○ Offline'}</div></div>`;
     html+=`<div class="sys-card"><div class="sys-label">PC Control</div><div class="sys-value ${s.pc==='online'?'online':'offline'}">${s.pc==='online'?'● Online':'○ Offline'}</div></div>`;
     html+='</div></div>';
@@ -5039,7 +4996,7 @@ async function loadStatus(){
     // PC Control API section
     html+=`<div class="sys-section"><div class="sys-section-title">PC Control API</div>
       <div id="pc-api-panel" class="sys-grid">
-        <div class="sys-card"><div class="sys-label">Durum</div><div class="sys-value" id="pc-api-status">Kontrol ediliyor...</div></div>
+        <div class="sys-card"><div class="sys-label">Status</div><div class="sys-value" id="pc-api-status">Checking...</div></div>
         <div class="sys-card"><div class="sys-label">PID</div><div class="sys-value" id="pc-api-pid">-</div></div>
         <div class="sys-card"><div class="sys-label">Uptime</div><div class="sys-value" id="pc-api-uptime">-</div></div>
         <div class="sys-card" style="display:flex;align-items:center;justify-content:center">
@@ -5050,7 +5007,7 @@ async function loadStatus(){
 
     document.getElementById('page-system').innerHTML=html;
     checkPcApi();
-  }catch(e){document.getElementById('page-system').innerHTML='<div class="empty">Alınamadı.</div>';}
+  }catch(e){document.getElementById('page-system').innerHTML='<div class="empty">Could not be loaded.</div>';}
 }
 
 // PC API controls
@@ -5080,7 +5037,7 @@ async function restartPcApi(){
     btn.textContent=r.status==='restart_sent'?'Restart Gonderildi':'PC Offline';
     setTimeout(()=>{btn.textContent='Restart PC API';btn.disabled=false;checkPcApi();},5000);
   }catch(e){
-    btn.textContent='Hata';setTimeout(()=>{btn.textContent='Restart PC API';btn.disabled=false;},3000);
+    btn.textContent='Error';setTimeout(()=>{btn.textContent='Restart PC API';btn.disabled=false;},3000);
   }
 }
 
@@ -5166,8 +5123,8 @@ let activeTagFilter='all';
 let toolsTimer=null;
 
 function dbadge(d,ev){
-  if(ev)return'<span class="dbadge d-eval">⏳ değerlendiriliyor</span>';
-  if(!d)return'<span class="dbadge d-none">değerlendirilmedi</span>';
+  if(ev)return'<span class="dbadge d-eval">⏳ evaluating</span>';
+  if(!d)return'<span class="dbadge d-none">not evaluated</span>';
   const m={ADOPT:'d-adopt ✅',WAIT:'d-wait ⏳',IGNORE:'d-ignore ❌'};
   const[cls,ico]=(m[d]||'d-none ').split(' ');
   return`<span class="dbadge ${cls}">${ico||''} ${d}</span>`;
@@ -5182,7 +5139,7 @@ async function loadTools(){
     const tools=await api('/api/tools');
     renderTools(tools);
     if(tools.some(t=>t.evaluating))toolsTimer=setTimeout(loadTools,10000);
-  }catch(e){pg.innerHTML='<div class="empty-hint">Tools yüklenemedi.</div>';}
+  }catch(e){pg.innerHTML='<div class="empty-hint">Tools failed to load.</div>';}
 }
 
 function renderTools(tools){
@@ -5213,7 +5170,7 @@ function renderTools(tools){
   }
   h+='<datalist id="ptags">'+PREDEFINED_TAGS.map(t=>`<option value="${t}">`).join('')+'</datalist>';
   if(filtered.length===0){
-    h+='<div class="empty-hint">Bu etikette tool yok.</div>';
+    h+='<div class="empty-hint">No tools in this tag.</div>';
   }else{
     filtered.forEach(t=>{
       h+=`<div class="tool-card">
@@ -5221,7 +5178,7 @@ function renderTools(tools){
           <span class="tc-name">🛠️ ${esc(t.name)}</span>
           ${dbadge(t.decision,t.evaluating)}
           <div class="tc-actions">
-            <button class="btn-s" onclick="evalTool(${esc(JSON.stringify(t.name))})" ${t.evaluating?'disabled':''}>${t.evaluating?'⏳':'🔍 Değerlendir'}</button>
+            <button class="btn-s" onclick="evalTool(${esc(JSON.stringify(t.name))})" ${t.evaluating?'disabled':''}>${t.evaluating?'⏳':'🔍 Evaluate'}</button>
             ${t.has_report?`<button class="btn-s" onclick="showRep(${esc(JSON.stringify(t.name))})">📄 Rapor</button>`:''}
             <button class="btn-s" onclick="renameTool(${esc(JSON.stringify(t.name))})">✏️</button>
             <button class="btn-s btn-del" onclick="delTool(${esc(JSON.stringify(t.name))})">🗑</button>
@@ -5254,10 +5211,10 @@ async function addTool(){
 }
 
 async function delTool(name){
-  showConfirm(name+' silinsin mi?',async()=>{
+  showConfirm('Delete '+name+'?',async()=>{
     await fetch('/api/tools/'+encodeURIComponent(name),{method:'DELETE',headers});
     await loadTools();
-  },'Tool Sil');
+  },'Delete Tool');
 }
 
 async function evalTool(name){
@@ -5273,7 +5230,7 @@ async function showRep(name){
   const hist=t.history||[];
   if(hist.length>0){
     histHtml=`<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:12px;">
-      <div style="font-weight:600;margin-bottom:8px;font-size:13px;">📋 Geçmiş Değerlendirmeler (${hist.length})</div>`;
+      <div style="font-weight:600;margin-bottom:8px;font-size:13px;">📋 Evaluation History (${hist.length})</div>`;
     const dec2e={ADOPT:'✅',WAIT:'⏳',IGNORE:'❌',UNKNOWN:'❓','':`🆕`};
     hist.forEach((h,i)=>{
       const d=h.date?h.date.slice(0,16).replace('T',' '):'?';
@@ -5283,20 +5240,20 @@ async function showRep(name){
         ${h.report_preview?`<div style="margin-top:4px;opacity:.8;line-height:1.5;">${h.report_preview.slice(0,150)}…</div>`:''}
       </div>`;
     });
-    histHtml+=`<button class="btn-s btn-del" style="margin-top:6px" onclick="clearToolHistory(${JSON.stringify(name)})">🗑 Geçmişi Sil</button>
+    histHtml+=`<button class="btn-s btn-del" style="margin-top:6px" onclick="clearToolHistory(${JSON.stringify(name)})">🗑 Clear History</button>
     </div>`;
   }
-  if(!t.report && hist.length===0){openModal(name,'<p>Rapor yok.</p>');return;}
-  const reportHtml=t.report?`<div style="font-size:13px;line-height:1.7;">${t.report}</div>`:'<p style="opacity:.6">Henüz değerlendirilmedi.</p>';
+  if(!t.report && hist.length===0){openModal(name,'<p>No report.</p>');return;}
+  const reportHtml=t.report?`<div style="font-size:13px;line-height:1.7;">${t.report}</div>`:'<p style="opacity:.6">Not evaluated yet.</p>';
   openModal(name+' — Rapor',`<div style="max-height:72vh;overflow-y:auto;">${reportHtml}${histHtml}</div>`);
 }
 
 async function clearToolHistory(name){
-  showConfirm(name+' — tüm değerlendirme geçmişi silinsin mi?',async()=>{
+  showConfirm('Clear all evaluation history for '+name+'?',async()=>{
     await fetch('/api/tools/'+encodeURIComponent(name)+'/history',{method:'DELETE',headers});
     closeModal();
     await loadTools();
-  },'Geçmişi Sil');
+  },'Clear History');
 }
 
 async function rmTag(name,tag){
@@ -5359,7 +5316,7 @@ let _appsData=[];
 async function loadApps(){
   const pg=document.getElementById('page-apps');if(!pg)return;
   try{_appsData=await api('/api/apps');}
-  catch(e){pg.innerHTML='<div class="loading" style="color:red">Apps yüklenemedi: '+e+'</div>';return;}
+  catch(e){pg.innerHTML='<div class="loading" style="color:red">Apps failed to load: '+e+'</div>';return;}
   renderApps(pg);
 }
 
@@ -5369,10 +5326,10 @@ function renderApps(pg){
 
   // ── Yeni Uygulama Formu ──
   h+=`<div class="app-new-section">
-    <h3>✨ Yeni Uygulama İste</h3>
+    <h3>✨ Request New App</h3>
     <div class="app-form-grid" style="margin-bottom:12px">
       <div>
-        <div class="app-form-label">Proje Adı</div>
+        <div class="app-form-label">Project Name</div>
         <input id="app-name-inp" class="t-input" placeholder="my-todo-app" style="width:100%">
       </div>
       <div>
@@ -5390,11 +5347,11 @@ function renderApps(pg){
       </div>
     </div>
     <div style="margin-bottom:14px">
-      <div class="app-form-label">Açıklama — ne yapması gerekiyor? (ne kadar detaylı, o kadar iyi)</div>
-      <textarea id="app-desc-inp" class="t-input" rows="4" placeholder="Örn: Kullanıcıların todo ekleyip silebildiği, localStorage ile saklayan basit bir web uygulaması. Mobil uyumlu olsun, dark theme..." style="width:100%;resize:vertical;font-family:inherit"></textarea>
+      <div class="app-form-label">Description — what should it do? (the more detailed, the better)</div>
+      <textarea id="app-desc-inp" class="t-input" rows="4" placeholder="e.g. a simple web app where users can add and delete todos, saved in localStorage. Mobile-friendly, dark theme..." style="width:100%;resize:vertical;font-family:inherit"></textarea>
     </div>
-    <button class="btn-p" onclick="submitAppRequest()">📨 İsteği Gönder</button>
-    <span style="font-size:12px;opacity:.6;margin-left:10px">→ Telegram botuna iletilir, bot oluşturup bildirir</span>
+    <button class="btn-p" onclick="submitAppRequest()">📨 Send Request</button>
+    <span style="font-size:12px;opacity:.6;margin-left:10px">→ Sent to the Telegram bot, which builds it and notifies you</span>
   </div>`;
 
   // ── Filtre tabları ──
@@ -5411,8 +5368,8 @@ function renderApps(pg){
   if(filtered.length===0){
     h+=`<div class="apps-empty">
       <div style="font-size:40px;margin-bottom:12px">🚀</div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Henüz proje yok</div>
-      <div style="font-size:13px">Yukarıdan yeni bir uygulama isteği oluştur</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">No projects yet</div>
+      <div style="font-size:13px">Create a new app request above</div>
     </div>`;
   } else {
     h+=`<div class="apps-section-title">PROJELER (${filtered.length})</div>`;
@@ -5434,7 +5391,7 @@ function renderApps(pg){
           </div>
           <span class="app-type-badge ${badge}">${app.type||'other'}</span>
         </div>
-        <div class="app-desc">${app.description||'<span style="opacity:.4">Açıklama yok</span>'}</div>
+        <div class="app-desc">${app.description||'<span style="opacity:.4">No description</span>'}</div>
         <div class="app-meta">
           ${addedStr?`<span>📅 ${addedStr}</span>`:''}
           ${builtStr?`<span>🔨 ${builtStr}</span>`:''}
@@ -5443,9 +5400,12 @@ function renderApps(pg){
           ${app.deploy_url?`<a href="${app.deploy_url}" target="_blank" style="color:var(--accent)">🔗 URL</a>`:''}
         </div>
         <div class="app-actions">
-          ${hasPath?`<button class="btn-s" onclick="showAppFiles(${esc(JSON.stringify(app.name))})">📁 Dosyalar</button>`:''}
-          <button class="btn-s" onclick="showAppLogs(${esc(JSON.stringify(app.name))})">📋 Log</button>
-          ${st==='running'?`<button class="btn-s" onclick="stopApp(${esc(JSON.stringify(app.name))})">⏹ Durdur</button>`:''}
+          ${app.deploy_url?`<a class="btn-s btn-vercel" href="${app.deploy_url}" target="_blank">🔗 Vercel</a>`:''}
+          ${!app.deploy_url&&st!=='running'?`<button class="btn-s btn-run" onclick="runApp(${esc(JSON.stringify(app.name))})">▶ Çalıştır</button>`:''}
+          ${st==='running'&&app.run_url?`<a class="btn-s btn-live" href="${app.run_url}" target="_blank">🌐 Aç</a>`:''}
+          ${st==='running'?`<button class="btn-s btn-stop" onclick="stopApp(${esc(JSON.stringify(app.name))})">⏹ Durdur</button>`:''}
+          <button class="btn-s" onclick="setVercelUrl(${esc(JSON.stringify(app.name))})">✏️</button>
+          ${hasPath?`<button class="btn-s" onclick="showAppFiles(${esc(JSON.stringify(app.name))})">📁</button>`:''}
           <button class="btn-s btn-del" onclick="deleteApp(${esc(JSON.stringify(app.name))})">🗑</button>
         </div>
       </div>`;
@@ -5454,6 +5414,30 @@ function renderApps(pg){
   }
   h+='</div>';
   pg.innerHTML=h;
+}
+
+
+async function runApp(name){
+  const btn=event.target;
+  btn.disabled=true;btn.textContent='⏳';
+  const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/run',{method:'POST',headers});
+  const j=await r.json();
+  if(j.ok){
+    showAlert('✅ Uygulama başlatıldı!\n\n'+j.url,'Çalışıyor');
+    await loadApps();
+  } else {
+    showAlert('❌ Hata: '+(j.error||'bilinmiyor'),'Hata');
+    btn.disabled=false;btn.textContent='▶ Çalıştır';
+  }
+}
+
+async function setVercelUrl(name){
+  const url=prompt('Vercel URL girin (boş bırakırsan kaldırılır):','');
+  if(url===null)return;
+  const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/update-url',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({url})});
+  const j=await r.json();
+  if(j.ok){await loadApps();}
+  else{showAlert('Hata: '+(j.error||'bilinmiyor'),'Hata');}
 }
 
 function setAppsFilter(t){_appsFilter=t;const pg=document.getElementById('page-apps');if(pg)renderApps(pg);}
@@ -5473,28 +5457,28 @@ function selTarget(btn,target){
 async function submitAppRequest(){
   const name=(document.getElementById('app-name-inp')||{}).value?.trim();
   const desc=(document.getElementById('app-desc-inp')||{}).value?.trim();
-  if(!name){showAlert('Proje adı boş olamaz','Hata');return;}
-  if(!desc||desc.length<20){showAlert('Açıklama çok kısa — ne yapmasını istediğini detaylı yaz','Hata');return;}
+  if(!name){showAlert('Project name cannot be empty','Error');return;}
+  if(!desc||desc.length<20){showAlert('Description is too short — describe what you want in more detail','Error');return;}
   const r=await fetch('/api/apps',{method:'POST',headers:{...headers,'Content-Type':'application/json'},
     body:JSON.stringify({name,type:_selAppType,description:desc,deploy_target:_selDeployTarget})});
   const j=await r.json();
   if(j.ok){
-    showAlert('✅ İstek gönderildi! Bot kısa süre içinde yapmaya başlayacak.','Tamam');
+    showAlert('✅ Request sent! The bot will start working on it shortly.','Done');
     document.getElementById('app-name-inp').value='';
     document.getElementById('app-desc-inp').value='';
     await loadApps();
   } else {
-    showAlert('Hata: '+(j.error||'bilinmeyen'),'Hata');
+    showAlert('Error: '+(j.error||'unknown'),'Error');
   }
 }
 
 async function showAppFiles(name){
   const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/files',{headers});
   const j=await r.json();
-  if(j.error){showAlert(j.error,'Hata');return;}
+  if(j.error){showAlert(j.error,'Error');return;}
   const files=j.files||[];
   let h=`<div class="app-files-tree">`;
-  if(files.length===0){h+='<div style="opacity:.5">Dosya bulunamadı</div>';}
+  if(files.length===0){h+='<div style="opacity:.5">No files found</div>';}
   files.forEach(f=>{
     const depth=(f.path.match(/\//g)||[]).length;
     const indent=depth*12;
@@ -5505,30 +5489,30 @@ async function showAppFiles(name){
     h+=`<div class="app-file-item" style="padding-left:${8+indent}px">${ficon} ${f.path}<span class="app-file-size">${sizeStr}</span></div>`;
   });
   h+='</div>';
-  h+=`<div style="margin-top:10px;font-size:12px;opacity:.6">${files.length} dosya</div>`;
-  openModal(name+' — Dosyalar', h);
+  h+=`<div style="margin-top:10px;font-size:12px;opacity:.6">${files.length} files</div>`;
+  openModal(name+' — Files', h);
 }
 
 async function showAppLogs(name){
-  openModal(name+' — Loglar','<div class="app-logs-box">Yükleniyor...</div>');
+  openModal(name+' — Logs','<div class="app-logs-box">Loading...</div>');
   const r=await fetch('/api/apps/'+encodeURIComponent(name)+'/logs',{headers});
   const j=await r.json();
   const box=document.querySelector('.app-logs-box');
-  if(box)box.textContent=j.logs||'(log yok)';
+  if(box)box.textContent=j.logs||'(no logs)';
 }
 
 async function stopApp(name){
-  showConfirm(name+' durdurulsun mu?',async()=>{
+  showConfirm('Stop '+name+'?',async()=>{
     await fetch('/api/apps/'+encodeURIComponent(name)+'/stop',{method:'POST',headers});
     await loadApps();
-  },'Uygulamayı Durdur');
+  },'Stop App');
 }
 
 async function deleteApp(name){
-  showConfirm(name+' silinsin mi? (proje klasörü de silinir)',async()=>{
+  showConfirm('Delete '+name+'? (the project folder will also be removed)',async()=>{
     await fetch('/api/apps/'+encodeURIComponent(name),{method:'DELETE',headers});
     await loadApps();
-  },'Projeyi Sil');
+  },'Delete Project');
 }
 
 // ══════════════════════════════════════════════════════
@@ -5545,7 +5529,7 @@ async function loadHealth(force){
     const url='/api/health'+(force?'?force=1':'');
     data=await api(url);
   }catch(e){
-    pg.innerHTML='<div class="loading" style="color:red">Health verisi alınamadı: '+e+'</div>';
+    pg.innerHTML='<div class="loading" style="color:red">Health data could not be loaded: '+e+'</div>';
     return;
   }
   renderHealth(pg,data);
@@ -5583,16 +5567,16 @@ function renderHealth(pg,d){
     <div>
       <div class="health-version">🦞 OpenClaw ${installedVer}</div>
       <div class="health-sub">
-        ${gwReachable?'<span style="color:#22c55e">● Gateway çalışıyor</span>':'<span style="color:#ef4444">● Gateway kapalı</span>'}
+        ${gwReachable?'<span style="color:#22c55e">● Gateway is running</span>':'<span style="color:#ef4444">● Gateway is offline</span>'}
         ${latencyMs!=null?` &nbsp;·&nbsp; ${latencyMs}ms`:''} &nbsp;·&nbsp; ${os.label||''}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       ${updateAvailable
         ?`<span class="update-badge">🆕 v${latestVer} mevcut</span>
-          <button class="btn-p" onclick="doUpdate()">⬆️ Güncelle</button>`
-        :`<span style="font-size:12px;opacity:.5">✓ Güncel (${latestVer})</span>`}
-      <button class="btn-s" onclick="loadHealth(true)">↻ Yenile</button>
+          <button class="btn-p" onclick="doUpdate()">⬆️ Update</button>`
+        :`<span style="font-size:12px;opacity:.5">✓ Up to date (${latestVer})</span>`}
+      <button class="btn-s" onclick="loadHealth(true)">↻ Refresh</button>
     </div>
   </div>`;
 
@@ -5608,8 +5592,8 @@ function renderHealth(pg,d){
   const gwColor=gwReachable?'h-green':'h-red';
   const gwStatus=gwSvc.runtimeShort||'bilinmiyor';
   h+=`<div class="health-card">
-    <h3>Gateway Servisi</h3>
-    <div class="health-status"><div class="h-dot ${gwColor}"></div>${gwReachable?'Çalışıyor':'Kapalı'}</div>
+    <h3>Gateway Service</h3>
+    <div class="health-status"><div class="h-dot ${gwColor}"></div>${gwReachable?'Running':'Offline'}</div>
     <div style="font-size:12px;opacity:.6;margin-top:6px;">${gwStatus}</div>
     <div style="font-size:12px;opacity:.6;">${gwSvc.label||''} · ${gwSvc.loadedText||''}</div>
   </div>`;
@@ -5629,9 +5613,9 @@ function renderHealth(pg,d){
   const secInfo=security.summary?.info||0;
   const secColor=secCrit>0?'h-red':secWarn>0?'h-yellow':'h-green';
   h+=`<div class="health-card">
-    <h3>Güvenlik Durumu</h3>
-    <div class="health-status"><div class="h-dot ${secColor}"></div>${secCrit>0?'Kritik sorun':secWarn>0?'Uyarı var':'Temiz'}</div>
-    <div style="font-size:12px;opacity:.6;margin-top:6px;">Kritik: ${secCrit} · Uyarı: ${secWarn} · Bilgi: ${secInfo}</div>
+    <h3>Security Status</h3>
+    <div class="health-status"><div class="h-dot ${secColor}"></div>${secCrit>0?'Critical issue':secWarn>0?'Warning present':'Clean'}</div>
+    <div style="font-size:12px;opacity:.6;margin-top:6px;">Critical: ${secCrit} · Warning: ${secWarn} · Info: ${secInfo}</div>
   </div>`;
 
   h+=`</div>`;
@@ -5644,12 +5628,12 @@ function renderHealth(pg,d){
     const hb=hbMap[a.id];
     const hbEnabled=hb?.enabled||false;
     const hbEvery=hb?.every||'disabled';
-    const lastActive=a.lastActiveAgeMs!=null?formatAge(a.lastActiveAgeMs):'hiç';
+    const lastActive=a.lastActiveAgeMs!=null?formatAge(a.lastActiveAgeMs):'never';
     const dotColor=a.sessionsCount>0?'h-green':hbEnabled?'h-yellow':'h-gray';
     h+=`<div class="agent-hcard">
       <div class="ah-name"><div class="h-dot ${dotColor}"></div>${emoji} ${a.id}</div>
       <div class="ah-meta">Son: ${lastActive}</div>
-      <div class="ah-meta">Heartbeat: ${hbEnabled?hbEvery:'kapalı'}</div>
+      <div class="ah-meta">Heartbeat: ${hbEnabled?hbEvery:'disabled'}</div>
       <div class="ah-meta">${a.sessionsCount} oturum</div>
     </div>`;
   });
@@ -5658,7 +5642,7 @@ function renderHealth(pg,d){
   // Güvenlik detayları
   const findings=security.findings||[];
   if(findings.length>0){
-    h+=`<div style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.7;">GÜVENLİK BULGULARI</div>`;
+    h+=`<div style="font-size:13px;font-weight:700;margin-bottom:10px;opacity:.7;">SECURITY FINDINGS</div>`;
     h+=`<div class="security-findings">`;
     findings.forEach(f=>{
       const cls=f.severity==='critical'?'crit':f.severity==='warn'?'warn':'info';
@@ -5671,11 +5655,90 @@ function renderHealth(pg,d){
     h+=`</div>`;
   }
 
+  // Backup bölümü
+  h+=`<div class="backup-section">
+    <h3>⬛ Workspace Yedekleme</h3>
+    <div class="backup-actions">
+      <button class="btn-p" id="btn-backup-create" onclick="doBackupCreate()">💾 Yedek Al</button>
+      <button class="btn-s" id="btn-git-push" onclick="doGitPush()">☁️ Git'e Push</button>
+      <button class="btn-s" onclick="loadBackupList()">↻ Listele</button>
+    </div>
+    <div class="backup-list" id="backup-list"><div class="backup-empty">Listelemek için ↻ tıklayın</div></div>
+  </div>`;
+
   pg.innerHTML=h;
 }
 
+// ══════════════════════════════════════════════════════
+// BACKUP
+// ══════════════════════════════════════════════════════
+async function loadBackupList(){
+  const el=document.getElementById('backup-list');
+  if(!el)return;
+  el.innerHTML='<div class="backup-empty">Yükleniyor...</div>';
+  try{
+    const d=await api('/api/backup/list');
+    if(!d.backups||d.backups.length===0){
+      el.innerHTML='<div class="backup-empty">Henüz yedek yok.</div>';return;
+    }
+    el.innerHTML=d.backups.map(b=>`
+      <div class="backup-item">
+        <div class="backup-item-info">
+          <span class="backup-item-name">📦 ${b.name}</span>
+          <span class="backup-item-meta">${b.created} · ${b.size_mb} MB</span>
+        </div>
+        <div class="backup-item-actions">
+          <button class="btn-restore" onclick="doRestore('${b.name}')">↩ Geri Yükle</button>
+          <button class="btn-danger" onclick="doBackupDelete('${b.name}')">🗑 Sil</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="backup-empty" style="color:#ef4444">Hata: '+e+'</div>';}
+}
+
+async function doBackupCreate(){
+  const btn=document.getElementById('btn-backup-create');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Yedekleniyor...';}
+  try{
+    const d=await fetch('/api/backup/create',{method:'POST',headers}).then(r=>r.json());
+    if(d.ok){showAlert(d.message,'✅ Yedek Alındı');loadBackupList();}
+    else showAlert(d.error||'Hata','❌ Hata');
+  }catch(e){showAlert(String(e),'❌ Hata');}
+  finally{if(btn){btn.disabled=false;btn.textContent='💾 Yedek Al';}}
+}
+
+async function doGitPush(){
+  const btn=document.getElementById('btn-git-push');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Push ediliyor...';}
+  try{
+    const d=await fetch('/api/backup/push-git',{method:'POST',headers}).then(r=>r.json());
+    showAlert((d.message||d.error||'?')+'\n'+(d.log||[]).join('\n'), d.ok?'✅ Git Push':'❌ Hata');
+  }catch(e){showAlert(String(e),'❌ Hata');}
+  finally{if(btn){btn.disabled=false;btn.textContent='☁️ Git\'e Push';}}
+}
+
+async function doRestore(filename){
+  showConfirm(`"${filename}" yedeğini geri yüklemek istediğinize emin misiniz?\n\nMevcut workspace önce otomatik yedeklenecek.`,async()=>{
+    showAlert('Geri yükleniyor, lütfen bekleyin...','⏳');
+    try{
+      const d=await fetch('/api/backup/restore',{method:'POST',headers,body:JSON.stringify({file:filename})}).then(r=>r.json());
+      if(d.ok){showAlert(d.message,'✅ Geri Yüklendi');loadBackupList();}
+      else showAlert(d.error||'Hata','❌ Hata');
+    }catch(e){showAlert(String(e),'❌ Hata');}
+  },'Geri Yükleme Onayı');
+}
+
+async function doBackupDelete(filename){
+  showConfirm(`"${filename}" yedeğini kalıcı olarak silmek istiyor musunuz?`,async()=>{
+    try{
+      const d=await fetch('/api/backup/delete',{method:'DELETE',headers,body:JSON.stringify({file:filename})}).then(r=>r.json());
+      if(d.ok){showAlert(d.message,'✅ Silindi');loadBackupList();}
+      else showAlert(d.error||'Hata','❌ Hata');
+    }catch(e){showAlert(String(e),'❌ Hata');}
+  },'Silme Onayı');
+}
+
 function formatAge(ms){
-  if(ms==null)return'hiç';
+  if(ms==null)return'never';
   const s=Math.floor(ms/1000);
   if(s<60)return s+'s';
   if(s<3600)return Math.floor(s/60)+'dk';
@@ -5684,11 +5747,11 @@ function formatAge(ms){
 }
 
 async function doUpdate(){
-  showConfirm('OpenClaw güncelleme başlatılsın mı? Gateway ~1-2 dk yeniden başlar.',async()=>{
+  showConfirm('Start OpenClaw update? The gateway will restart for about 1-2 minutes.',async()=>{
     const r=await fetch('/api/health/update',{method:'POST',headers});
     const j=await r.json();
-    showAlert(j.message||j.error||'İşlem başlatıldı','Güncelleme');
-  },'OpenClaw Güncelle');
+    showAlert(j.message||j.error||'Operation started','Update');
+  },'Update OpenClaw');
 }
 
 // ══════════════════════════════════════════════════════
@@ -5701,6 +5764,8 @@ const STYS=['grok','profesyonel','samimi','hoca','merakli'];
 const SLBL={'grok':'😈 Grok','profesyonel':'💼 Pro','samimi':'😊 Samimi','hoca':'👨‍🏫 Hoca','merakli':'🔍 Meraklı'};
 let selFmt='thread',selSty='samimi',studioTimer=null;
 
+Object.assign(FLBL,{thread:'Thread',liste:'List',egitim:'Educational',storytelling:'Story',karsilastirma:'Comparison',spark:'Spark',ozet:'Summary'});
+Object.assign(SLBL,{grok:'Grok',profesyonel:'Pro',samimi:'Friendly',hoca:'Teacher',merakli:'Curious'});
 async function loadStudio(){
   clearTimeout(studioTimer);
   const pg=document.getElementById('page-studio');if(!pg)return;
@@ -5715,7 +5780,7 @@ function renderStudio(hist){
   const fmtBtns=FMTS.map(f=>`<button class="fmt-btn${f===selFmt?' sel':''}" onclick="pickFmt('${f}')">${FLBL[f]}</button>`).join('');
   const styBtns=STYS.map(s=>`<button class="sty-btn${s===selSty?' sel':''}" onclick="pickSty('${s}')">${SLBL[s]}</button>`).join('');
   let histH='';
-  if(!hist.length){histH='<div class="empty-hint">Henüz içerik üretilmedi.</div>';}
+  if(!hist.length){histH='<div class="empty-hint">No content generated yet.</div>';}
   else hist.forEach(h=>{
     const prev=h.preview?(h.preview.replace(/<[^>]*>/g,' ').trim().slice(0,140)):'';
     histH+=`<div class="hist-item">
@@ -5723,42 +5788,142 @@ function renderStudio(hist){
         <span class="hi-topic">${esc(h.topic)}</span>
         <span class="hi-badge">${esc(h.format)}</span>
         <span class="hi-badge">${esc(h.style)}</span>
-        ${h.generating?'<span class="hi-badge hi-gen">⏳ üretiliyor</span>':''}
+        ${h.generating?'<span class="hi-badge hi-gen">⏳ generating</span>':''}
       </div>
-      <div class="hi-meta">${fmtD(h.created_at)}${h.sent?' · Telegram\'a gönderildi':''}</div>
+      <div class="hi-meta">${fmtD(h.created_at)}${h.sent?' · Sent to Telegram':''}</div>
       ${prev?`<div class="hi-preview">${esc(prev)}</div>`:''}
       <div class="hi-actions">
-        ${!h.generating&&h.preview?`<button class="btn-s" onclick="viewHist('${h.id}')">👁 Görüntüle</button>`:''}
-        <button class="btn-s" onclick="reGen('${esc(h.topic)}','${h.format}','${h.style}')">↺ Tekrar</button>
+        ${!h.generating&&h.preview?`<button class="btn-s" onclick="viewHist('${h.id}')">View</button>`:''}
+        <button class="btn-s" onclick="reGen('${esc(h.topic)}','${h.format}','${h.style}')">Regenerate</button>
         ${!h.generating?`<button class="btn-s btn-del" onclick="delHist('${h.id}')">🗑</button>`:''}
       </div>
     </div>`;
   });
   pg.innerHTML=`<div class="studio-wrap"><div class="studio-grid">
     <div class="s-panel">
-      <div class="s-panel-title">✍️ İçerik Üret</div>
-      <div class="s-label">Konu</div>
-      <input class="t-input s-full" id="st-topic" placeholder="ör: ChatGPT vs Claude AI" />
+      <div class="s-panel-title">Generate Content</div>
+      <div class="s-label">Topic</div>
+      <input class="t-input s-full" id="st-topic" placeholder="e.g. ChatGPT vs Claude AI" />
       <div class="s-label">Format</div>
       <div class="fmt-grid">${fmtBtns}</div>
-      <div class="s-label">Stil</div>
+      <div class="s-label">Style</div>
       <div class="sty-grid">${styBtns}</div>
       <div class="s-btn-row">
-        <button class="s-btn s-btn-main" onclick="stGen(false)">🚀 Üret</button>
-        <button class="s-btn s-btn-all" onclick="stGen(true)">📦 Tüm Formatlar</button>
+        <button class="s-btn s-btn-main" onclick="stGen(false)">Generate</button>
+        <button class="s-btn s-btn-all" onclick="stGen(true)">All Formats</button>
       </div>
-      <div class="s-hint">Seçili: <b>${FLBL[selFmt]}</b> / <b>${SLBL[selSty]}</b><br>İçerik Telegram'a da gönderilir.</div>
+      <div class="s-hint">Selected: <b>${FLBL[selFmt]}</b> / <b>${SLBL[selSty]}</b><br>The content is also sent to Telegram.</div>
     </div>
     <div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span class="s-panel-title">📋 Geçmiş</span>
-        <button class="btn-s" onclick="loadStudio()">↻ Yenile</button>
+        <span class="s-panel-title">History</span>
+        <button class="btn-s" onclick="loadStudio()">Refresh</button>
       </div>
       ${histH}
     </div>
-  </div></div>`;
+  </div>
+
+  <div class="x-post-section">
+    <div class="xp-header">
+      <div>
+        <div class="xp-title">𝕏 Post Üretici</div>
+        <div class="xp-subtitle">X News konfigürasyonundaki kaynaklardan güncel AI tweet'leri üret ve paylaş</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="xp-count" class="t-input" style="width:80px;padding:6px 8px">
+          <option value="4">4 tweet</option>
+          <option value="6" selected>6 tweet</option>
+          <option value="8">8 tweet</option>
+          <option value="10">10 tweet</option>
+        </select>
+        <button class="btn-p" id="xp-gen-btn" onclick="genXPosts()">⚡ Tweet Üret</button>
+      </div>
+    </div>
+    <div id="xp-results"></div>
+  </div>
+
+  </div>`;
   const inp=document.getElementById('st-topic');
   if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')stGen(false);});
+}
+
+
+async function genXPosts(){
+  const btn = document.getElementById('xp-gen-btn');
+  const res = document.getElementById('xp-results');
+  const count = parseInt((document.getElementById('xp-count')||{}).value||'6');
+  if(!btn||!res)return;
+
+  btn.disabled=true;
+  btn.textContent='⏳ Üretiliyor...';
+  res.innerHTML='<div class="xp-loading"><div class="spinner"></div><span>AI güncel haberleri analiz edip tweet yazıyor...</span></div>';
+
+  try{
+    const r=await fetch('/api/studio/x-posts',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({count})});
+    const j=await r.json();
+    if(!j.ok){res.innerHTML=`<div class="xp-error">❌ ${esc(j.error||'Bilinmeyen hata')}</div>`;return;}
+
+    const tweets=j.tweets||[];
+    if(!tweets.length){res.innerHTML='<div class="xp-error">Tweet üretilemedi</div>';return;}
+
+    let h='<div class="xp-grid">';
+    tweets.forEach((t,i)=>{
+      const shareUrl='https://twitter.com/intent/tweet?text='+encodeURIComponent(t.text);
+      const charColor=t.char_count>260?'#ef4444':t.char_count>220?'#f59e0b':'#6b7280';
+      h+=`<div class="xp-card" id="xp-card-${i}">
+        <div class="xp-card-meta">
+          <span class="xp-badge">${esc(t.topic||'AI')}</span>
+          <span class="xp-badge xp-angle">${esc(t.angle||'')}</span>
+          <span style="font-size:11px;color:${charColor};margin-left:auto">${t.char_count}/280</span>
+        </div>
+        <div class="xp-text" id="xp-text-${i}" contenteditable="true" oninput="xpUpdateCount(${i})">${esc(t.text)}</div>
+        <div class="xp-actions">
+          <a class="btn-s btn-xshare" href="${shareUrl}" target="_blank" onclick="xpUpdateShareUrl(${i},this)">𝕏 Paylaş</a>
+          <button class="btn-s" onclick="xpCopy(${i})">📋 Kopyala</button>
+          <button class="btn-s btn-del" onclick="xpDelete(${i})">🗑</button>
+        </div>
+      </div>`;
+    });
+    h+='</div>';
+    h+=`<div class="xp-sources">Kaynaklar: ${(j.sources.accounts||[]).map(a=>'@'+a).join(', ')} · ${(j.sources.hashtags||[]).map(h=>'#'+h).join(', ')}</div>`;
+    res.innerHTML=h;
+  }catch(e){
+    res.innerHTML=`<div class="xp-error">❌ Hata: ${esc(e.message)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent='⚡ Tweet Üret';
+  }
+}
+
+function xpUpdateCount(i){
+  const el=document.getElementById('xp-text-'+i);
+  if(!el)return;
+  const card=document.getElementById('xp-card-'+i);
+  const count=el.innerText.length;
+  const span=card?.querySelector('[style*="color"]');
+  if(span){
+    span.style.color=count>260?'#ef4444':count>220?'#f59e0b':'#6b7280';
+    span.textContent=count+'/280';
+  }
+}
+
+function xpUpdateShareUrl(i,link){
+  const el=document.getElementById('xp-text-'+i);
+  if(!el)return;
+  link.href='https://twitter.com/intent/tweet?text='+encodeURIComponent(el.innerText.trim());
+}
+
+function xpCopy(i){
+  const el=document.getElementById('xp-text-'+i);
+  if(!el)return;
+  navigator.clipboard.writeText(el.innerText.trim()).then(()=>{
+    showAlert('Tweet kopyalandı!','✓');
+  });
+}
+
+function xpDelete(i){
+  const card=document.getElementById('xp-card-'+i);
+  if(card)card.remove();
 }
 
 function pickFmt(f){selFmt=f;if(document.getElementById('page-studio'))loadStudio();}
@@ -5767,7 +5932,7 @@ function pickSty(s){selSty=s;if(document.getElementById('page-studio'))loadStudi
 async function stGen(allFmts){
   const inp=document.getElementById('st-topic');
   const topic=(inp?.value||'').trim();
-  if(!topic){showAlert('Konu girin!','Uyarı');return;}
+  if(!topic){showAlert('Enter a topic!','Warning');return;}
   await fetch('/api/studio/generate',{method:'POST',headers:{...headers,'Content-Type':'application/json'},
     body:JSON.stringify({topic,format:selFmt,style:selSty,all_formats:allFmts})});
   if(inp)inp.value='';
@@ -5777,7 +5942,7 @@ async function stGen(allFmts){
 async function viewHist(id){
   const r=await fetch('/api/studio/history/'+id,{headers});
   const it=await r.json();
-  const content=it.content||'(içerik yok)';
+  const content=it.content||'(no content)';
   const display=content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
   openModal(`${it.topic} — ${it.format}/${it.style}`,
     `<div style="font-size:13px;line-height:1.8;max-height:70vh;overflow-y:auto;">${display}</div>`);
@@ -5792,18 +5957,18 @@ function reGen(topic,fmt,sty){
 }
 
 async function delHist(id){
-  showConfirm('Bu içerik geçmişten silinsin mi?',async()=>{
+  showConfirm('Delete this item from history?',async()=>{
     await fetch('/api/studio/history/'+id,{method:'DELETE',headers});
     await loadStudio();
-  },'Geçmiş Sil');
+  },'Delete History');
 }
 
 async function renameTool(name){
-  showPrompt('Yeni tool adı:',name,async(newName)=>{
+  showPrompt('New tool name:',name,async(newName)=>{
     if(!newName||newName.trim()===name)return;
     await fetch('/api/tools/'+encodeURIComponent(name),{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({new_name:newName.trim()})});
     await loadTools();
-  },'Tool Adını Değiştir');
+  },'Rename Tool');
 }
 
 // ══════════════════════════════════════════════════════
@@ -5813,7 +5978,7 @@ let xCfg={accounts:[],hashtags:[],keywords:[],max_tweets_per_query:50,min_likes:
 
 async function loadXNews(){
   const pg=document.getElementById('page-x-news');if(!pg)return;
-  try{xCfg=await api('/api/x/config');}catch(e){pg.innerHTML='<div class="empty-hint">X config yüklenemedi.</div>';return;}
+  try{xCfg=await api('/api/x/config');}catch(e){pg.innerHTML='<div class="empty-hint">X config failed to load.</div>';return;}
   renderXNews();
 }
 
@@ -5832,8 +5997,8 @@ function renderXNews(){
     <div class="x-header">
       <span class="x-title">𝕏 Twitter Takip Konfigürasyonu</span>
       <div class="x-actions">
-        <button class="btn-s" onclick="xSuggest()">✨ Trend Keşfet</button>
-        <button class="btn-p" onclick="xRun()">▶ Şimdi Çalıştır</button>
+        <button class="btn-s" onclick="xSuggest()">✨ Discover Trends</button>
+        <button class="btn-p" onclick="xRun()">▶ Run Now</button>
         <button class="btn-s" onclick="loadXNews()">↻</button>
       </div>
     </div>
@@ -5852,7 +6017,7 @@ function renderXNews(){
 
       <div class="x-section">
         <div class="x-sec-title">🏷️ Hashtag'ler <span class="x-count">${tags.length}</span></div>
-        <div class="x-sec-hint">Bu hashtag'ler aranır (#tag)</div>
+        <div class="x-sec-hint">These hashtags are searched (#tag)</div>
         <div class="x-chips">${chipList(tags,'hashtag')}</div>
         <div class="x-add-row">
           <input class="t-input" id="xi-tag" placeholder="hashtag (# olmadan)" />
@@ -5862,7 +6027,7 @@ function renderXNews(){
 
       <div class="x-section">
         <div class="x-sec-title">🔍 Anahtar Kelimeler <span class="x-count">${kws.length}</span></div>
-        <div class="x-sec-hint">Bu kelimeler veya ifadeler aranır</div>
+        <div class="x-sec-hint">These words or phrases are searched</div>
         <div class="x-chips">${chipList(kws,'keyword')}</div>
         <div class="x-add-row">
           <input class="t-input" id="xi-kw" placeholder="anahtar kelime veya ifade" />
@@ -5888,7 +6053,7 @@ function renderXNews(){
           <span class="x-sec-hint" style="margin:0">Son kaç saatin tweetleri (1-168)</span>
         </div>
         <div class="x-setting-row">
-          <button class="btn-p" onclick="xSaveSettings()">💾 Ayarları Kaydet</button>
+          <button class="btn-p" onclick="xSaveSettings()">💾 Save Settings</button>
         </div>
         <div class="x-sec-hint" style="margin-top:10px">
           Sabah 08:00 TR + Akşam 17:00 TR otomatik çalışır · 3 sorgu: hashtag (relevancy) · hesap (recency) · keyword (relevancy)
@@ -5950,16 +6115,16 @@ async function xSaveSettings(){
 // ══════════════════════════════════════════════════════
 // APIS TAB
 // ══════════════════════════════════════════════════════
-const STATUS_LABEL={online:'🟢 Online',offline:'🔴 Offline',auth_error:'🟡 Auth Hatası',
-  rate_limited:'🟣 Rate Limit',error:'🔴 Hata',unknown:'⚪ Bilinmiyor',pinging:'🔵 Test...'};
+const STATUS_LABEL={online:'🟢 Online',offline:'🔴 Offline',auth_error:'🟡 Auth Error',
+  rate_limited:'🟣 Rate Limit',error:'🔴 Error',unknown:'⚪ Unknown',pinging:'🔵 Testing...'};
 
 async function loadApiKeys(){
   const pg=document.getElementById('page-apikeys');if(!pg)return;
-  pg.innerHTML='<div class="loading" data-i18n="loading">Yükleniyor...</div>';
+  pg.innerHTML='<div class="loading">Loading...</div>';
   try{
     const apis=await api('/api/apis');
     renderApiKeys(apis);
-  }catch(e){pg.innerHTML='<div class="empty-hint">API listesi yüklenemedi.</div>';}
+  }catch(e){pg.innerHTML='<div class="empty-hint">API list failed to load.</div>';}
 }
 
 function renderApiKeys(apis){
@@ -6064,7 +6229,7 @@ async function pingAllApis(){
     const d=await r.json();
     await loadApiKeys();
     showAlert(d.results.map(x=>x.id+': '+x.status+(x.detail?' — '+x.detail:'')).join('\n'),'✅ Ping Sonuçları');
-  }catch(e){showAlert('Hata: '+e.message,'❌');}
+  }catch(e){showAlert('Error: '+e.message,'❌');}
   finally{btn.disabled=false;btn.textContent='🔍 Hepsini Test Et';}
 }
 
@@ -6076,7 +6241,7 @@ async function pingSingleApi(id){
     const d=await r.json();
     await loadApiKeys();
     if(d.detail) showAlert(d.status+' — '+d.detail, id);
-  }catch(e){showAlert('Hata: '+e.message,'❌');}
+  }catch(e){showAlert('Error: '+e.message,'❌');}
 }
 
 async function deleteApiEntry(id,name){
@@ -6090,7 +6255,7 @@ function showAddApiModal(){
   openModal('🔑 Yeni API Ekle',`
     <div style="display:flex;flex-direction:column;gap:10px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><label style="font-size:11px;opacity:.7">İsim *</label><input class="t-input" id="api-n-name" placeholder="OpenAI" style="width:100%"></div>
+        <div><label style="font-size:11px;opacity:.7">Name *</label><input class="t-input" id="api-n-name" placeholder="OpenAI" style="width:100%"></div>
         <div><label style="font-size:11px;opacity:.7">İkon</label><input class="t-input" id="api-n-icon" placeholder="🤖" style="width:100%"></div>
       </div>
       <div><label style="font-size:11px;opacity:.7">Base URL</label><input class="t-input" id="api-n-url" placeholder="https://api.example.com" style="width:100%"></div>
@@ -6099,9 +6264,9 @@ function showAddApiModal(){
         <div><label style="font-size:11px;opacity:.7">Plan</label><input class="t-input" id="api-n-plan" placeholder="Free / Pro / Enterprise" style="width:100%"></div>
         <div><label style="font-size:11px;opacity:.7">Aylık $</label><input type="number" class="t-input" id="api-n-cost" placeholder="0" style="width:100%"></div>
       </div>
-      <div><label style="font-size:11px;opacity:.7">Notlar</label><input class="t-input" id="api-n-notes" placeholder="Kısa açıklama" style="width:100%"></div>
+      <div><label style="font-size:11px;opacity:.7">Notes</label><input class="t-input" id="api-n-notes" placeholder="Short description" style="width:100%"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
-        <button class="btn-s" onclick="closeModal()">İptal</button>
+        <button class="btn-s" onclick="closeModal()">Cancel</button>
         <button class="btn-p" onclick="submitAddApi()">+ Ekle</button>
       </div>
     </div>`);
@@ -6109,7 +6274,7 @@ function showAddApiModal(){
 
 async function submitAddApi(){
   const name=document.getElementById('api-n-name').value.trim();
-  if(!name){showAlert('İsim zorunlu','❌');return;}
+  if(!name){showAlert('Name is required','❌');return;}
   const payload={
     name,
     icon:document.getElementById('api-n-icon').value.trim()||'🔑',
@@ -6140,15 +6305,15 @@ async function xSuggest(){
     return;
   }
 
-  container.innerHTML = '<div class="x-suggest-panel"><div class="x-suggest-loading">✨ AI trend etiketleri yükleniyor... (~15-30sn)</div></div>';
+  container.innerHTML = '<div class="x-suggest-panel"><div class="x-suggest-loading">✨ Loading AI trend tags... (~15-30s)</div></div>';
 
   try {
     const data = await api('/api/x/suggest-tags');
-    if(data.error){ container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Hata: '+esc(data.error)+'</div></div>'; return; }
+    if(data.error){ container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Error: '+esc(data.error)+'</div></div>'; return; }
     _xSuggestData = data;
     renderSuggestPanel(data);
   } catch(e) {
-    container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Yüklenemedi: '+esc(e.message)+'</div></div>';
+    container.innerHTML='<div class="x-suggest-panel"><div class="x-suggest-loading" style="color:#e55">Failed to load: '+esc(e.message)+'</div></div>';
   }
 }
 
@@ -6167,14 +6332,14 @@ function renderSuggestPanel(data){
       const cls = isAdded ? 'x-sug-chip added' : 'x-sug-chip';
       const label = t.startsWith('#') ? t : '#'+t;
       if(isAdded) return `<span class="${cls}" title="Zaten eklendi">${esc(label)} ✓</span>`;
-      return `<span class="${cls}" onclick="xSuggestAdd(${JSON.stringify(t)})">${esc(label)}</span>`;
+      return `<span class="${cls}" onclick='xSuggestAdd(${JSON.stringify(t)})'>${esc(label)}</span>`;
     }).join('');
     catsHtml += `<div class="x-cat-label">${esc(catName)}</div><div class="x-cat-chips">${chipsHtml}</div>`;
   }
 
   container.innerHTML = `<div class="x-suggest-panel">
     <div class="x-suggest-title">
-      ✨ Trend AI Etiketleri
+      ✨ Trending AI Tags
       <span style="font-weight:400;font-size:12px;color:var(--text-secondary)">(${all.length} etiket — tıklayarak ekle)</span>
       <button class="btn-s" style="margin-left:auto;font-size:11px;padding:3px 8px" onclick="document.getElementById('x-suggest-container').innerHTML=''">✕ Kapat</button>
     </div>
@@ -6186,14 +6351,13 @@ function renderSuggestPanel(data){
 async function xSuggestAdd(tag){
   const clean = tag.replace(/^#/,'').trim();
   if(!clean) return;
-  // keyword olarak ekle
   const arr = xCfg.keywords || [];
   if(!arr.includes(clean)){
     arr.push(clean);
     xCfg.keywords = arr;
     await xSave();
+    renderXNews();
   }
-  // chip'i "added" yap (sayfayı yeniden render etmeden)
   if(_xSuggestData) renderSuggestPanel(_xSuggestData);
 }
 
@@ -6207,14 +6371,15 @@ async function xRun(){
 
 
 // Init
-applyI18n();
-loadAgents();
-api('/api/status').then(s=>{
-  document.getElementById('sb-browser').classList.add(s.browser_agent==='online'?'on':'off');
-  document.getElementById('sb-pc').classList.add(s.pc==='online'?'on':'off');
-  document.getElementById('sb-agent-team').classList.add(s.agent_team==='online'?'on':'off');
-  if(s.uptime)document.getElementById('sb-uptime').textContent='Up: '+s.uptime.replace(/.*up\s*/,'').split(',')[0].trim();
-}).catch(()=>{document.getElementById('sb-browser').classList.add('off');document.getElementById('sb-pc').classList.add('off');document.getElementById('sb-agent-team').classList.add('off');});
+function init() {
+  loadAgents();
+  api('/api/status').then(s=>{
+    document.getElementById('sb-browser').classList.add(s.browser_agent==='online'?'on':'off');
+    document.getElementById('sb-pc').classList.add(s.pc==='online'?'on':'off');
+    document.getElementById('sb-agent-team').classList.add(s.agent_team==='online'?'on':'off');
+    if(s.uptime)document.getElementById('sb-uptime').textContent='Up: '+s.uptime.replace(/.*up\s*/,'').split(',')[0].trim();
+  }).catch(()=>{document.getElementById('sb-browser').classList.add('off');document.getElementById('sb-pc').classList.add('off');document.getElementById('sb-agent-team').classList.add('off');});
+}
 
 // ── MOBILE SIDEBAR ──────────────────────────────────────────────────────────
 function toggleSidebar(){
@@ -6227,6 +6392,38 @@ function closeSidebar(){
   document.querySelector('.sidebar').classList.remove('open');
   document.getElementById('mob-overlay').classList.remove('open');
 }
+
+// ─── Login ───
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.querySelector('.app').style.display = 'none';
+  setTimeout(() => document.getElementById('login-key-input').focus(), 50);
+}
+function hideLogin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.querySelector('.app').style.display = '';
+}
+async function doLogin() {
+  const k = document.getElementById('login-key-input').value.trim();
+  if (!k) return;
+  const err = document.getElementById('login-err');
+  err.textContent = 'Kontrol ediliyor...';
+  try {
+    const r = await fetch('/api/agents', {headers: {'X-API-Key': k}});
+    if (r.status === 401) { err.textContent = '❌ Yanlış API key'; return; }
+    if (!r.ok) { err.textContent = '❌ Sunucu hatası'; return; }
+    KEY = k;
+    headers = {'X-API-Key': KEY};
+    sessionStorage.setItem('dash_key', KEY);
+    hideLogin();
+    init();
+  } catch(e) {
+    err.textContent = '❌ Bağlantı hatası';
+  }
+}
+// Sayfa yüklenince: key yoksa login göster
+if (!KEY) { showLogin(); } else { init(); }
+
 </script>
 </body>
 </html>

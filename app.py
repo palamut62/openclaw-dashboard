@@ -1454,12 +1454,93 @@ def read_file():
 
 # ─── APP BUILDER ─────────────────────────────────────────────────────────────
 APPS_DB      = Path("/root/scripts/app-builder/projects.json")
-PROJECT_DIRS = [Path("/tmp"), Path("/root/projects")]
+PROJECT_DIRS = [
+    Path("/root/apps"),
+    Path("/root/.openclaw/workspace"),
+    Path("/root/projects"),
+]
+
+# App olarak sayılmayacak workspace klasörleri
+WORKSPACE_IGNORE = {
+    ".git", ".openclaw", ".pi", "skills", "memory", "data", "drafts",
+    "content", "error-log", "scripts", "Masaustu", "notion-mvp",
+    "agent-team-system", "__pycache__", "node_modules",
+}
+
+def _is_app_dir(path):
+    """Bir klasörün uygulama olup olmadığını tespit et."""
+    p = path
+    if p.name.startswith("."):
+        return False
+    if p.name in WORKSPACE_IGNORE:
+        return False
+    # package.json veya app.py/main.py içeriyorsa uygulama
+    return (
+        (p / "package.json").exists() or
+        (p / "app.py").exists() or
+        (p / "main.py").exists() or
+        (p / "server.py").exists() or
+        (p / "bot.py").exists()
+    )
 
 APP_TYPE_ICONS = {
     "web": "🌐", "bot": "🤖", "api": "⚡", "python": "🐍",
     "desktop": "🖥️", "extension": "🧩", "fullstack": "🔥", "other": "📦"
 }
+
+
+def _auto_register_new_apps():
+    """PROJECT_DIRS deki yeni app klasorlerini otomatik kaydet."""
+    try:
+        db = load_apps_db()
+        tracked_names = {p["name"] for p in db.get("projects", [])}
+        changed = False
+        now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+        for base in PROJECT_DIRS:
+            if not base.exists():
+                continue
+            for d in base.iterdir():
+                if not d.is_dir():
+                    continue
+                if d.name in tracked_names:
+                    continue
+                if not _is_app_dir(d):
+                    continue
+                ptype = "web"
+                if (d / "package.json").exists():
+                    try:
+                        pkg = json.loads((d / "package.json").read_text())
+                        deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+                        if "next" in deps:
+                            ptype = "fullstack"
+                        elif any(k in deps for k in ["express"]):
+                            ptype = "api"
+                        else:
+                            ptype = "web"
+                    except Exception:
+                        ptype = "web"
+                elif (d / "bot.py").exists():
+                    ptype = "bot"
+                elif any((d / f).exists() for f in ["app.py", "main.py", "server.py"]):
+                    ptype = "python"
+                db.setdefault("projects", []).append({
+                    "name": d.name,
+                    "path": str(d),
+                    "type": ptype,
+                    "tracked": False,
+                    "added": now_str,
+                    "built_at": now_str,
+                    "description": "",
+                    "status": "ready",
+                    "deploy_target": "vps",
+                    "deploy_url": "",
+                })
+                tracked_names.add(d.name)
+                changed = True
+        if changed:
+            save_apps_db(db)
+    except Exception:
+        pass
 
 def load_apps_db():
     if not APPS_DB.exists():
@@ -1503,29 +1584,39 @@ def scan_project_dir(base):
         pass
     return found
 
+def _path_priority(path):
+    """Dusuk deger = daha yuksek oncelik."""
+    if path.startswith("/root/apps"): return 0
+    if path.startswith("/root/.openclaw/workspace"): return 1
+    return 2
+
 def get_all_projects():
     db = load_apps_db()
-    tracked = {p["path"]: p for p in db.get("projects", [])}
-    # Scan dirs
+    tracked_by_path = {p["path"]: p for p in db.get("projects", [])}
+    # Scan dirs for untracked apps
     scanned_paths = set()
     for base in PROJECT_DIRS:
         for path in scan_project_dir(base):
             scanned_paths.add(path)
-    # Merge
-    all_projects = []
-    for path, info in tracked.items():
+    # Merge tracked + untracked
+    candidates = {}
+    for path, info in tracked_by_path.items():
         scanned_paths.discard(path)
         info["tracked"] = True
-        all_projects.append(info)
+        name = info["name"]
+        if name not in candidates or _path_priority(path) < _path_priority(candidates[name]["path"]):
+            candidates[name] = info
     for path in sorted(scanned_paths):
         name = Path(path).name
+        if name in candidates:
+            continue  # tracked versiyonu var, skip
         ptype = detect_project_type(path)
-        all_projects.append({
+        candidates[name] = {
             "name": name, "path": path, "type": ptype,
             "tracked": False, "added": "", "description": "",
             "status": "unknown", "deploy_url": ""
-        })
-    return all_projects
+        }
+    return list(candidates.values())
 
 def get_container_status(project_name):
     try:
@@ -1543,6 +1634,8 @@ def get_container_status(project_name):
 def list_apps():
     if not check_key():
         return jsonify({"error": "unauthorized"}), 401
+    # Yeni app'ları otomatik tara ve kaydet
+    _auto_register_new_apps()
     projects = get_all_projects()
     return jsonify(projects)
 
@@ -1657,12 +1750,38 @@ def app_logs(name):
 def stop_app(name):
     if not check_key():
         return jsonify({"error": "unauthorized"}), 401
+    killed = False
+    # Process olarak çalışıyorsa durdur
+    if name in _running_procs:
+        info = _running_procs.pop(name)
+        proc = info.get("proc")
+        if proc:
+            try:
+                proc.terminate()
+                proc.wait(timeout=5)
+            except Exception:
+                try: proc.kill()
+                except Exception: pass
+        killed = True
+    # Docker container ise durdur
     try:
         subprocess.run(["docker", "stop", name], capture_output=True, timeout=15)
         subprocess.run(["docker", "rm", name], capture_output=True, timeout=10)
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        killed = True
+    except Exception:
+        pass
+    # DB güncelle
+    try:
+        db = load_apps_db()
+        proj = next((p for p in db.get("projects", []) if p["name"] == name), None)
+        if proj:
+            proj["status"] = "ready"
+            proj.pop("run_port", None)
+            proj.pop("run_url", None)
+            save_apps_db(db)
+    except Exception:
+        pass
+    return jsonify({"ok": killed})
 
 
 @app.route("/api/apps/<path:name>/files")
@@ -1912,6 +2031,91 @@ def ping_all_apis():
         results.append({"id": api["id"], "status": res["status"], "detail": res["detail"]})
     save_apis_db(db)
     return jsonify({"ok": True, "results": results})
+
+
+# ─── APP RUN / STOP ──────────────────────────────────────────────────────────
+import socket as _socket
+
+_running_procs = {}  # name -> {pid, port, url}
+
+def _find_free_port(start=5600):
+    for p in range(start, start + 200):
+        try:
+            with _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM) as s:
+                s.bind(("", p))
+                return p
+        except OSError:
+            continue
+    return None
+
+def _detect_run_cmd(path, port):
+    p = Path(path)
+    pkg = p / "package.json"
+    if pkg.exists():
+        try:
+            scripts = json.loads(pkg.read_text()).get("scripts", {})
+        except Exception:
+            scripts = {}
+        if "dev" in scripts:
+            return f"npm run dev -- --port {port} --host 0.0.0.0"
+        if "start" in scripts:
+            return f"PORT={port} npm start"
+    for pyfile in ["app.py", "main.py", "server.py", "run.py"]:
+        if (p / pyfile).exists():
+            return f"PORT={port} python3 {pyfile}"
+    return None
+
+@app.route("/api/apps/<path:name>/run", methods=["POST"])
+def run_app(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    db = load_apps_db()
+    proj = next((p for p in db.get("projects", []) if p["name"] == name), None)
+    if not proj:
+        return jsonify({"error": "app not found"}), 404
+    # Zaten çalışıyor mu?
+    if name in _running_procs:
+        info = _running_procs[name]
+        proc = info.get("proc")
+        if proc and proc.poll() is None:
+            return jsonify({"ok": True, "url": info["url"], "port": info["port"]})
+        else:
+            del _running_procs[name]
+    path = proj.get("path", "")
+    if not path or not Path(path).exists():
+        return jsonify({"error": "app klasörü bulunamadı: " + path}), 404
+    port = _find_free_port()
+    if not port:
+        return jsonify({"error": "boş port bulunamadı"}), 500
+    cmd = _detect_run_cmd(path, port)
+    if not cmd:
+        return jsonify({"error": "çalıştırma komutu algılanamadı"}), 400
+    log_path = f"/tmp/{name}.run.log"
+    proc = subprocess.Popen(
+        cmd, shell=True, cwd=path,
+        stdout=open(log_path, "w"), stderr=subprocess.STDOUT
+    )
+    url = f"http://100.123.254.69:{port}"
+    _running_procs[name] = {"pid": proc.pid, "port": port, "url": url, "proc": proc}
+    proj["status"] = "running"
+    proj["run_port"] = port
+    proj["run_url"] = url
+    save_apps_db(db)
+    return jsonify({"ok": True, "url": url, "port": port, "pid": proc.pid})
+
+@app.route("/api/apps/<path:name>/update-url", methods=["POST"])
+def update_app_url(name):
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json(silent=True) or {}
+    url = data.get("url", "").strip()
+    db = load_apps_db()
+    proj = next((p for p in db.get("projects", []) if p["name"] == name), None)
+    if not proj:
+        return jsonify({"error": "app not found"}), 404
+    proj["deploy_url"] = url
+    save_apps_db(db)
+    return jsonify({"ok": True})
 
 @app.route("/api/apps/<path:name>/register", methods=["POST"])
 def register_app(name):
@@ -2255,6 +2459,99 @@ def studio_generate():
     return jsonify({"ok": True, "id": item_id, "message": f"'{topic}' için içerik üretimi başladı"})
 
 
+
+@app.route("/api/studio/x-posts", methods=["POST"])
+def studio_x_posts():
+    """X News keyword/hashtag/hesaplarından güncel AI tweet taslakları üret + humanize et."""
+    if not check_key():
+        return jsonify({"error": "unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    count = min(int(data.get("count", 6)), 10)
+
+    # X config'den anahtar kelimeler, hashtag'ler ve hesaplar al
+    xcfg = load_x_cfg()
+    accounts = (xcfg.get("accounts") or [])[:5]
+    hashtags = (xcfg.get("hashtags") or [])[:8]
+    keywords = (xcfg.get("keywords") or [])[:6]
+
+    accounts_str = ", ".join(f"@{a}" for a in accounts) if accounts else "@OpenAI, @AnthropicAI, @deepseek_ai"
+    hashtags_str = ", ".join(f"#{h}" for h in hashtags) if hashtags else "#AI, #ChatGPT, #Claude"
+    keywords_str = ", ".join(keywords) if keywords else "AI agent, LLM, open source AI"
+
+    prompt = f"""Sen deneyimli bir Twitter/X içerik üreticisisin. Aşağıdaki AI/teknoloji kaynaklarından ilham alarak {count} adet özgün tweet taslağı hazırla.
+
+Takip edilen kaynaklar: {accounts_str}
+Popüler hashtag'ler: {hashtags_str}
+Anahtar kelimeler: {keywords_str}
+
+KURALLAR:
+1. Her tweet maksimum 260 karakter (Twitter limiti)
+2. Her tweet farklı bir konu/açı: haberler, hot-take, ipucu, karşılaştırma, soru, analiz vb.
+3. Türkçe tweet yaz
+4. Emoji kullan ama abartma (1-2 emoji/tweet)
+5. Sonuna 1-2 ilgili hashtag ekle
+6. ASLA "AI olarak" veya "dil modeli olarak" gibi ifadeler kullanma
+7. Samimi, meraklı ve insan gibi yaz — robot izi olmamalı
+8. Güncel AI gelişmelerini, modelleri, araçları, agent sistemlerini konu al
+
+Sadece JSON döndür, başka hiçbir şey yazma:
+{{"tweets": [
+  {{"id": 1, "text": "tweet metni", "topic": "konu etiketi", "angle": "acı/tip/haber/analiz"}},
+  ...
+]}}"""
+
+    try:
+        import urllib.request as _req
+        body = json.dumps({
+            "model": _MINIMAX_MODEL,
+            "max_tokens": 3000,
+            "messages": [{"role": "user", "content": prompt}]
+        }).encode()
+        req_obj = _req.Request(
+            f"{_MINIMAX_BASE}/v1/messages",
+            data=body,
+            headers={
+                "x-api-key": _MINIMAX_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            }
+        )
+        with _req.urlopen(req_obj, timeout=90) as resp:
+            raw = json.loads(resp.read())
+
+        text_block = next((b for b in raw.get("content", []) if b.get("type") == "text"), None)
+        if not text_block:
+            return jsonify({"error": "AI yanıt vermedi"}), 500
+
+        text = text_block["text"].strip()
+        # JSON çıkar
+        if "```" in text:
+            parts = text.split("```")
+            for p in parts:
+                p = p.strip()
+                if p.startswith("json"):
+                    p = p[4:].strip()
+                if p.startswith("{"):
+                    text = p
+                    break
+        data_parsed = json.loads(text)
+        tweets = data_parsed.get("tweets", [])
+
+        # Tweet metinlerini normalize et (280 karakter limiti)
+        for t in tweets:
+            t["text"] = t.get("text", "").strip()[:280]
+            t["char_count"] = len(t["text"])
+
+        return jsonify({"ok": True, "tweets": tweets, "sources": {
+            "accounts": accounts,
+            "hashtags": hashtags,
+            "keywords": keywords
+        }})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/studio/formats")
 def studio_formats():
     if not check_key():
@@ -2408,6 +2705,130 @@ def run_x_news():
         stderr=subprocess.STDOUT,
     )
     return jsonify({"ok": True, "message": "X haber toplayici baslatildi"})
+
+
+# ══════════════════════════════════════════════════════
+# BACKUP / RESTORE
+# ══════════════════════════════════════════════════════
+BACKUP_DIR = Path("/root/backups/openclaw")
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+WORKSPACE  = Path("/root/.openclaw/workspace")
+GH_TOKEN   = os.getenv("GITHUB_TOKEN", "")
+GH_REPO    = "palamut62/openclaw-config"
+
+@app.route("/api/backup/list")
+def backup_list():
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    files = []
+    for f in sorted(BACKUP_DIR.glob("*.tar.gz"), reverse=True):
+        stat = f.stat()
+        files.append({
+            "name": f.name,
+            "size": stat.st_size,
+            "size_mb": round(stat.st_size / 1_048_576, 2),
+            "created": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+            "ts": stat.st_mtime,
+        })
+    return jsonify({"backups": files, "count": len(files)})
+
+@app.route("/api/backup/create", methods=["POST"])
+def backup_create():
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    try:
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out = BACKUP_DIR / f"workspace_{ts}.tar.gz"
+        result = subprocess.run(
+            ["tar", "-czf", str(out),
+             "--exclude=*/node_modules", "--exclude=*/__pycache__", "--exclude=*.pyc",
+             str(WORKSPACE)],
+            capture_output=True, timeout=60
+        )
+        if result.returncode != 0:
+            return jsonify({"error": result.stderr.decode()[:300]}), 500
+        stat = out.stat()
+        return jsonify({
+            "ok": True,
+            "file": out.name,
+            "size_mb": round(stat.st_size / 1_048_576, 2),
+            "message": f"Yedek alindi: {out.name}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backup/push-git", methods=["POST"])
+def backup_push_git():
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    try:
+        remote = f"https://{GH_TOKEN}@github.com/{GH_REPO}.git"
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+        cmds = [
+            f"cd {WORKSPACE} && git config user.email palamut62@github.com",
+            f"cd {WORKSPACE} && git config user.name palamut62",
+            f"cd {WORKSPACE} && git remote set-url origin {remote} 2>/dev/null || git remote add origin {remote}",
+            f"cd {WORKSPACE} && git add -A",
+            f'cd {WORKSPACE} && git commit -m "Dashboard backup - {ts}" --allow-empty',
+            f"cd {WORKSPACE} && git push -f origin master",
+        ]
+        log = []
+        for cmd in cmds:
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+            log.append(r.stdout.strip() or r.stderr.strip())
+        pushed = any("master" in l for l in log)
+        return jsonify({
+            "ok": pushed,
+            "message": f"Git push {'basarili' if pushed else 'basarisiz'}",
+            "log": [l for l in log if l][-3:]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backup/restore", methods=["POST"])
+def backup_restore():
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json() or {}
+    filename = data.get("file", "").strip()
+    if not filename or "/" in filename or not filename.endswith(".tar.gz"):
+        return jsonify({"error": "Gecersiz dosya adi"}), 400
+    backup_file = BACKUP_DIR / filename
+    if not backup_file.exists():
+        return jsonify({"error": "Yedek dosya bulunamadi"}), 404
+    try:
+        # Geri yuklemeden once mevcut workspace'i yedekle
+        safe_ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_out = BACKUP_DIR / f"pre_restore_{safe_ts}.tar.gz"
+        subprocess.run(
+            ["tar", "-czf", str(safe_out),
+             "--exclude=*/node_modules", "--exclude=*/__pycache__",
+             str(WORKSPACE)],
+            capture_output=True, timeout=60
+        )
+        # Geri yukle
+        result = subprocess.run(
+            ["tar", "-xzf", str(backup_file), "-C", "/"],
+            capture_output=True, timeout=120
+        )
+        if result.returncode != 0:
+            return jsonify({"error": result.stderr.decode()[:300]}), 500
+        return jsonify({
+            "ok": True,
+            "message": f"{filename} geri yuklendi. Onceki durum {safe_out.name} olarak yedeklendi.",
+            "safety_backup": safe_out.name
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backup/delete", methods=["DELETE"])
+def backup_delete():
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json() or {}
+    filename = data.get("file", "").strip()
+    if not filename or "/" in filename or not filename.endswith(".tar.gz"):
+        return jsonify({"error": "Gecersiz dosya adi"}), 400
+    backup_file = BACKUP_DIR / filename
+    if not backup_file.exists():
+        return jsonify({"error": "Dosya bulunamadi"}), 404
+    backup_file.unlink()
+    return jsonify({"ok": True, "message": f"{filename} silindi"})
 
 
 if __name__ == "__main__":
