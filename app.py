@@ -1821,6 +1821,126 @@ def app_files(name):
 # APIS TAB — API Limit & Status Tracker
 # ═══════════════════════════════════════════════════════════════
 APIS_DB_PATH = Path("/root/scripts/dashboard/apis_config.json")
+# ── Otomatik .env tarama ──────────────────────────────────────────
+ENV_FILES = [
+    Path("/root/.openclaw/.env"),
+    Path("/root/.env"),
+    Path("/root/scripts/dashboard/.env"),
+]
+
+KNOWN_API_REGISTRY = {
+    "OPENROUTER_API_KEY": {
+        "id": "openrouter", "name": "OpenRouter", "icon": "🔀",
+        "base_url": "https://openrouter.ai/api/v1",
+        "ping_type": "openrouter", "plan": "Pay-as-you-go",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "llm", "vision"],
+        "notes": "Vision + LLM router — image_analyze.py, audio_transcribe.py"
+    },
+    "GEMINI_API_KEY": {
+        "id": "gemini", "name": "Google Gemini", "icon": "✨",
+        "base_url": "https://generativelanguage.googleapis.com",
+        "ping_type": "gemini", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "vision"], "notes": "Google Gemini API"
+    },
+    "GOOGLE_API_KEY": {
+        "id": "gemini", "name": "Google Gemini", "icon": "✨",
+        "base_url": "https://generativelanguage.googleapis.com",
+        "ping_type": "gemini", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "vision"], "notes": "Google Gemini API"
+    },
+    "ANTHROPIC_API_KEY": {
+        "id": "anthropic", "name": "Anthropic / Claude", "icon": "🤖",
+        "base_url": "https://api.anthropic.com",
+        "ping_type": "anthropic", "plan": "Pay-as-you-go",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "llm"], "notes": "Claude API"
+    },
+    "OPENAI_API_KEY": {
+        "id": "openai", "name": "OpenAI", "icon": "🟢",
+        "base_url": "https://api.openai.com/v1",
+        "ping_type": "openai", "plan": "Pay-as-you-go",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "llm"], "notes": "OpenAI GPT / Whisper"
+    },
+    "TELEGRAM_BOT_TOKEN": {
+        "id": "telegram", "name": "Telegram Bot", "icon": "📱",
+        "base_url": "https://api.telegram.org",
+        "ping_type": "telegram", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["notification", "main"], "notes": "Ana Telegram botu"
+    },
+    "GITHUB_TOKEN": {
+        "id": "github", "name": "GitHub", "icon": "🐙",
+        "base_url": "https://api.github.com",
+        "ping_type": "github", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["git", "devops"], "notes": "palamut62 hesabı — repo yönetimi"
+    },
+    "FIRECRAWL_API_KEY": {
+        "id": "firecrawl", "name": "Firecrawl", "icon": "🔥",
+        "base_url": "https://api.firecrawl.dev",
+        "ping_type": "firecrawl", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["scraping", "research"], "notes": "Web scraping — research-agent"
+    },
+    "MINIMAX_API_KEY": {
+        "id": "minimax", "name": "MiniMax", "icon": "🤖",
+        "base_url": "https://api.minimax.io/anthropic",
+        "ping_type": "minimax", "plan": "Free",
+        "monthly_cost_usd": 0,
+        "tags": ["ai", "llm", "openclaw"], "notes": "OpenClaw ana modeli — MiniMax portal"
+    },
+}
+
+
+def _load_env_vars():
+    """Tüm .env dosyalarını okur, birleşik dict döner."""
+    env_vars = {}
+    for ef in ENV_FILES:
+        if ef.exists():
+            for line in ef.read_text(errors="ignore").splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, _, v = line.partition("=")
+                env_vars[k.strip()] = v.strip().strip('"').strip("'")
+    return env_vars
+
+
+def scan_env_apis():
+    """
+    .env dosyalarındaki tanınan API keylerini tarar.
+    apis_config.json'daki id'lerle çakışmayanları 'auto' flagiyle döner.
+    """
+    env_vars = _load_env_vars()
+    db_ids = {a["id"] for a in load_apis_db().get("apis", [])}
+    detected = {}  # id -> entry (deduplicate)
+
+    for var_name, meta in KNOWN_API_REGISTRY.items():
+        val = env_vars.get(var_name)
+        if not val:
+            continue
+        api_id = meta["id"]
+        if api_id in db_ids or api_id in detected:
+            continue
+        entry = dict(meta)
+        entry["api_key"] = val
+        entry["api_key_display"] = (val[:8] + "..." + val[-5:]) if len(val) > 15 else val
+        entry["auto"] = True
+        entry["env_var"] = var_name
+        entry.setdefault("limits", {})
+        entry.setdefault("models", [])
+        entry["status"] = "unknown"
+        entry["last_checked"] = ""
+        entry["remaining"] = {}
+        detected[api_id] = entry
+
+    return list(detected.values())
+
+
 
 def load_apis_db():
     if not APIS_DB_PATH.exists():
@@ -1913,6 +2033,55 @@ def _ping_api(api):
                 "rate_limit": lim
             },"detail":f"User: {d.get('data',{}).get('username','?')}"})
 
+        elif ptype == "openrouter":
+            req = urllib.request.Request(
+                "https://openrouter.ai/api/v1/auth/key",
+                headers={"Authorization": f"Bearer {key}",
+                         "User-Agent": "OpenClaw-Dashboard"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            data_d = d.get("data", d)
+            usage = data_d.get("usage", 0)
+            limit = data_d.get("limit", None)
+            result.update({"status": "online", "remaining": {
+                "usage_usd": round(float(usage or 0), 6),
+                "limit_usd": limit,
+                "is_free_tier": data_d.get("is_free_tier", False)
+            }, "detail": f"Used: ${float(usage or 0):.4f}"})
+
+        elif ptype == "anthropic":
+            req = urllib.request.Request(
+                "https://api.anthropic.com/v1/models",
+                headers={"x-api-key": key,
+                         "anthropic-version": "2023-06-01",
+                         "User-Agent": "OpenClaw-Dashboard"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            models = [m.get("id","?") for m in d.get("data",[])][:3]
+            result.update({"status": "online", "remaining": {},
+                "detail": f"Models: {', '.join(models)}"})
+
+        elif ptype == "openai":
+            req = urllib.request.Request(
+                "https://api.openai.com/v1/models",
+                headers={"Authorization": f"Bearer {key}",
+                         "User-Agent": "OpenClaw-Dashboard"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            cnt = len(d.get("data", []))
+            result.update({"status": "online", "remaining": {},
+                "detail": f"{cnt} model erişilebilir"})
+
+        elif ptype == "gemini":
+            req = urllib.request.Request(
+                f"https://generativelanguage.googleapis.com/v1beta/models?key={key}",
+                headers={"User-Agent": "OpenClaw-Dashboard"})
+            with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
+                d = json.loads(r.read())
+            cnt = len(d.get("models", []))
+            result.update({"status": "online", "remaining": {},
+                "detail": f"{cnt} Gemini model erişilebilir"})
+
         else:
             req = urllib.request.Request(base, headers={"User-Agent":"OpenClaw"})
             with urllib.request.urlopen(req, timeout=6, context=ctx) as r:
@@ -1936,7 +2105,10 @@ def list_apis():
     if not check_key():
         return jsonify({"error": "unauthorized"}), 401
     db = load_apis_db()
-    return jsonify(db.get("apis", []))
+    manual = db.get("apis", [])
+    # .env'den otomatik tespit edilenler (apis_config'de olmayanlar)
+    auto = scan_env_apis()
+    return jsonify(manual + auto)
 
 
 @app.route("/api/apis", methods=["POST"])
@@ -1972,6 +2144,23 @@ def add_api():
     return jsonify({"ok": True, "id": new_id})
 
 
+@app.route("/api/apis/sync-env", methods=["POST"])
+def sync_env_apis_route():
+    """Auto-detected API'leri apis_config.json'a kalıcı olarak kaydet."""
+    if not check_key(): return jsonify({"error": "unauthorized"}), 401
+    auto_apis = scan_env_apis()
+    if not auto_apis:
+        return jsonify({"ok": True, "added": 0, "message": "Yeni API bulunamadı"})
+    db = load_apis_db()
+    added = []
+    for entry in auto_apis:
+        e = {k: v for k, v in entry.items() if k not in ("auto", "env_var")}
+        db.setdefault("apis", []).append(e)
+        added.append(e["id"])
+    save_apis_db(db)
+    return jsonify({"ok": True, "added": len(added), "ids": added})
+
+
 @app.route("/api/apis/<api_id>", methods=["DELETE"])
 def delete_api_entry(api_id):
     if not check_key():
@@ -2003,15 +2192,23 @@ def ping_api_entry(api_id):
     if not check_key():
         return jsonify({"error": "unauthorized"}), 401
     db = load_apis_db()
+    # Önce manual listede ara
     api = next((a for a in db.get("apis",[]) if a["id"] == api_id), None)
+    is_auto = False
+    if not api:
+        # Auto-detected listede ara
+        auto_list = scan_env_apis()
+        api = next((a for a in auto_list if a["id"] == api_id), None)
+        is_auto = True
     if not api:
         return jsonify({"error": "API bulunamadi"}), 404
     res = _ping_api(api)
-    now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
-    api["status"] = res["status"]
-    api["remaining"] = res["remaining"]
-    api["last_checked"] = now_str
-    save_apis_db(db)
+    if not is_auto:
+        now_str = datetime.now(timezone(timedelta(hours=3))).isoformat()
+        api["status"] = res["status"]
+        api["remaining"] = res["remaining"]
+        api["last_checked"] = now_str
+        save_apis_db(db)
     return jsonify({"ok": True, "status": res["status"],
                     "remaining": res["remaining"], "detail": res["detail"]})
 

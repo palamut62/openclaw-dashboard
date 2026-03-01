@@ -725,6 +725,11 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .apis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
 .api-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;}
 .api-card:hover{border-color:var(--accent);}
+.api-card-auto{border-color:rgba(99,179,237,.35);background:rgba(99,179,237,.04);}
+.api-card-auto:hover{border-color:var(--accent);}
+.auto-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.5px;padding:1px 5px;border-radius:4px;background:rgba(99,179,237,.2);color:#63b3ed;vertical-align:middle;margin-left:4px;}
+.save-btn{background:rgba(72,187,120,.15)!important;color:#48bb78!important;border-color:rgba(72,187,120,.3)!important;}
+.save-btn:hover{background:rgba(72,187,120,.3)!important;}
 .api-card-head{display:flex;align-items:center;gap:12px;}
 .api-icon{font-size:28px;width:42px;text-align:center;}
 .api-info{flex:1;min-width:0;}
@@ -6139,10 +6144,11 @@ function renderApiKeys(apis){
       <div>
         <div class="apis-title">🔑 API Yönetimi</div>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:3px">
-          ${apis.length} API · ${onlineCount} online · Aylık maliyet: $${totalCost.toFixed(0)}
+          ${apis.length} API · ${onlineCount} online · Aylık maliyet: $${totalCost.toFixed(0)} · <span style="color:var(--accent)">${apis.filter(a=>a.auto).length} otomatik</span>
         </div>
       </div>
       <div class="apis-actions">
+        <button class="btn-s" onclick="syncEnvApis()" id="syncEnvBtn">🔄 .env Tara</button>
         <button class="btn-s" onclick="pingAllApis()">🔍 Hepsini Test Et</button>
         <button class="btn-p" onclick="showAddApiModal()">+ API Ekle</button>
       </div>
@@ -6194,11 +6200,12 @@ function renderApiCard(a){
   // Checked
   const checkedStr=a.last_checked?`<span class="api-checked">Son test: ${a.last_checked.slice(11,16)}</span>`:'';
 
-  return `<div class="api-card" id="api-card-${esc(a.id)}">
+  const autoBadge=a.auto?`<span class="auto-badge" title=".env'den otomatik tespit edildi">ENV</span>`:'';
+  return `<div class="api-card${a.auto?' api-card-auto':''}" id="api-card-${esc(a.id)}">
     <div class="api-card-head">
       <div class="api-icon">${a.icon||'🔑'}</div>
       <div class="api-info">
-        <div class="api-name">${esc(a.name)}</div>
+        <div class="api-name">${esc(a.name)} ${autoBadge}</div>
         <div class="api-base">${esc(a.base_url||'')}</div>
       </div>
       <div class="api-status-dot ${statusCls}" title="${STATUS_LABEL[statusCls]||statusCls}" id="api-dot-${esc(a.id)}"></div>
@@ -6217,9 +6224,39 @@ function renderApiCard(a){
       ${checkedStr}
       <span style="flex:1"></span>
       <button class="detail-btn" onclick="pingSingleApi(${JSON.stringify(a.id)})">🔍 Test</button>
-      <button class="detail-btn danger" onclick="deleteApiEntry(${JSON.stringify(a.id)},${JSON.stringify(a.name)})">🗑</button>
+      ${a.auto
+        ?`<button class="detail-btn save-btn" onclick="saveAutoApi(${JSON.stringify(a.id)})">📥 Kaydet</button>`
+        :`<button class="detail-btn danger" onclick="deleteApiEntry(${JSON.stringify(a.id)},${JSON.stringify(a.name)})">🗑</button>`
+      }
     </div>
   </div>`;
+}
+
+async function syncEnvApis(){
+  const btn=document.getElementById('syncEnvBtn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Taranıyor...';}
+  try{
+    const r=await fetch('/api/apis/sync-env',{method:'POST',headers});
+    const d=await r.json();
+    await loadApiKeys();
+    if(d.added>0){
+      showAlert(`${d.added} yeni API kaydedildi: ${(d.ids||[]).join(', ')}`,'✅ Senkronize Edildi');
+    } else {
+      showAlert(d.message||'Tüm tespit edilen APIler zaten kaydedildi','ℹ️ Bilgi');
+    }
+  }catch(e){showAlert('Hata: '+e.message,'❌');}
+  finally{if(btn){btn.disabled=false;btn.textContent='🔄 .env Tara';}}
+}
+
+async function saveAutoApi(id){
+  try{
+    const r=await fetch('/api/apis/sync-env',{method:'POST',headers});
+    const d=await r.json();
+    if(d.added>0){
+      showAlert(`${id} kaydedildi`,'✅ Kaydedildi');
+      await loadApiKeys();
+    }
+  }catch(e){showAlert('Hata: '+e.message,'❌');}
 }
 
 async function pingAllApis(){
